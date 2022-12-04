@@ -146,12 +146,13 @@
     <ClCompile Include="wav.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="BW8.h" />
+    <ClInclude Include="BWX.h" />
     <ClInclude Include="jpgd.h" />
     <ClInclude Include="jpgd_idct.h" />
     <ClInclude Include="jpge.h" />
+    <ClInclude Include="PDX.h" />
     <ClInclude Include="R36.h" />
-    <ClInclude Include="SC1.h" />
+    <ClInclude Include="SCX.h" />
     <ClInclude Include="SSTV.h" />
     <ClInclude Include="wav.h" />
   </ItemGroup>

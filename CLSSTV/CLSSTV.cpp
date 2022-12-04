@@ -26,13 +26,16 @@ const char* getFilenameFromPath(const char* path) {
 	return path;
 }
 
+void sizeErr(int x, int y) {
+	printf_s("[!] Incorrectly sized image supplied. Required %i x %i.\n", x, y);
+}
+
 struct encMode {
 	char code[8];
 	char desc[128];
 	int sizeX;
 	int sizeY;
 };
-
 
 encMode BW8 =   { "BW8",   "Black/White 8s",  160, 120 };
 encMode BW12 =  { "BW12",  "Black/White 12s", 160, 120 };
@@ -43,34 +46,24 @@ encMode SCDX =  { "SCDX",  "ScottieDX",       320, 256 };
 encMode PD50 =  { "PD50",  "PD50",            320, 256 };
 encMode PD90 =  { "PD90",  "PD90",            320, 256 };
 encMode PD120 = { "PD120", "PD120",           640, 496 };
-
 encMode modes[] = { BW8, BW12, R36, SC1, SC2, SCDX, PD50, PD90, PD120 };
 
-const char* encodeMSG[] = {
-	"\nIMPLEMENTED:",
-	"BW8   : Black/White 8s   (160 x 120)",
-	"BW12  : Black/White 12s  (160 x 120)",
-	"R36   : Robot36          (320 x 240)",
-	"SC1   : Scottie1         (320 x 256)",
-	"SC2   : Scottie2         (320 x 256)",
-	"SCDX  : ScottieDX        (320 x 256)",
-	"PD50  : PD50             (320 x 256)",
-	"PD90  : PD90             (320 x 256)",
-	"PD120 : PD120            (640 x 496)",
-
-	"\nFUTURE:",
-	"R24 : Robot24            (160 x 120)",
-	"R72 : Robot72            (320 x 240)",
-};
+bool validateMode(encMode mode, char* arg, int jpg_width, int jpg_height) {
+	if (strcmp(arg, mode.code) == 0) {
+		if (!(jpg_width == mode.sizeX && jpg_height == mode.sizeY)) {
+			sizeErr(mode.sizeX, mode.sizeY);
+			return false;
+		}
+		return true;
+	}
+}
 
 int main(int argc, char* argv[])
 {
 	//output file pointer
 	FILE* ofptr;
 
-	printf_s("[CLSSTV R1.2 2022]\n");
-
-	//print mode list
+	//print mode list if requested
 	if (strcmp(argv[1], "-M") == 0) {
 		printf_s(" %-8s | %-16s | %-9s\n", "CODE", "DESCRIPTION", "IMG SIZE");
 		printf_s(" %-8s | %-16s | %-9s\n", "", "", "");
@@ -87,6 +80,7 @@ int main(int argc, char* argv[])
 	}
 
 	//begin encode
+	printf_s("[CLSSTV R1.2 2022]\n");
 	printf_s("[Beginning SSTV generation @ %iKHz]\n", wav::header.sampleRate);
 
 	//read input jpg
@@ -102,6 +96,7 @@ int main(int argc, char* argv[])
 	//init wav system
 	if (!wav::init()) {
 		printf_s("[!] Issue while allocating WAV memory\n");
+		return 0;
 	}
 	
 	//open output file
@@ -113,72 +108,73 @@ int main(int argc, char* argv[])
 		return 0;
 	}
 
-	//call encodes, badly designed
-	if (strcmp(argv[1], "BW8") == 0) {
-		if (!(jpg_width == 160 && jpg_height == 120)) {
-			printf_s("[!] Incorrectly sized image supplied. Required 160 x 120.\n");
+	//call individual encoders
+	if (strcmp(argv[1], BW8.code) == 0) {
+		if (!(jpg_width == BW8.sizeX && jpg_height == BW8.sizeY)) {
+			sizeErr(BW8.sizeX, BW8.sizeY);
 			return 0;
 		}
 		encodeBW8(rgbBuffer);
 	}
-	else if (strcmp(argv[1], "BW12") == 0) {
-		if (!(jpg_width == 160 && jpg_height == 120)) {
-			printf_s("[!] Incorrectly sized image supplied. Required 160 x 120.\n");
+	else if (strcmp(argv[1], BW12.code) == 0) {
+		if (!(jpg_width == BW12.sizeX && jpg_height == BW12.sizeY)) {
+			sizeErr(BW12.sizeX, BW12.sizeY);
 			return 0;
 		}
 		encodeBW12(rgbBuffer);
 	}
-	else if (strcmp(argv[1], "SC1") == 0) {
-		if (!(jpg_width == 320 && jpg_height == 256)) {
-			printf_s("[!] Incorrectly sized image supplied. Required 320 x 256.\n");
+	else if (strcmp(argv[1], SC1.code) == 0) {
+		if (!(jpg_width == SC1.sizeX && jpg_height == SC1.sizeY)) {
+			sizeErr(SC1.sizeX, SC1.sizeY);
 			return 0;
 		}
 		encodeSC1(rgbBuffer);
 	}
-	else if (strcmp(argv[1], "SC2") == 0) {
-		if (!(jpg_width == 320 && jpg_height == 256)) {
-			printf_s("[!] Incorrectly sized image supplied. Required 320 x 256.\n");
+	else if (strcmp(argv[1], SC2.code) == 0) {
+		if (!(jpg_width == SC2.sizeX && jpg_height == SC2.sizeY)) {
+			sizeErr(SC2.sizeX, SC2.sizeY);
 			return 0;
 		}
 		encodeSC2(rgbBuffer);
 	}
-	else if (strcmp(argv[1], "SCDX") == 0) {
-		if (!(jpg_width == 320 && jpg_height == 256)) {
-			printf_s("[!] Incorrectly sized image supplied. Required 320 x 256.\n");
+	else if (strcmp(argv[1], SCDX.code) == 0) {
+		if (!(jpg_width == SCDX.sizeX && jpg_height == SCDX.sizeY)) {
+			sizeErr(SCDX.sizeX, SCDX.sizeY);
 			return 0;
 		}
 		encodeSCDX(rgbBuffer);
 	}
-	else if (strcmp(argv[1], "R36") == 0) {
-		if (!(jpg_width == 320 && jpg_height == 240)) {
-			printf_s("[!] Incorrectly sized image supplied. Required 320 x 240.\n");
+	else if (strcmp(argv[1], R36.code) == 0) {
+		if (!(jpg_width == R36.sizeX && jpg_height == R36.sizeY)) {
+			sizeErr(R36.sizeX, R36.sizeY);
 			return 0;
 		}
 		encodeR36(rgbBuffer);
 	}
-	else if (strcmp(argv[1], "PD50") == 0) {
-		if (!(jpg_width == 320 && jpg_height == 240)) {
-			printf_s("[!] Incorrectly sized image supplied. Required 320 x 240.\n");
+	else if (strcmp(argv[1], PD50.code) == 0) {
+		if (!(jpg_width == PD50.sizeX && jpg_height == PD50.sizeY)) {
+			sizeErr(PD50.sizeX, PD50.sizeY);
 			return 0;
 		}
 		encodePD50(rgbBuffer);
 	}
-	else if (strcmp(argv[1], "PD90") == 0) {
-		if (!(jpg_width == 320 && jpg_height == 240)) {
-			printf_s("[!] Incorrectly sized image supplied. Required 320 x 240.\n");
+	else if (strcmp(argv[1], PD90.code) == 0) {
+		if (!(jpg_width == PD90.sizeX && jpg_height == PD90.sizeY)) {
+			sizeErr(PD90.sizeX, PD90.sizeY);
 			return 0;
 		}
 		encodePD90(rgbBuffer);
 	}
-	else if (strcmp(argv[1], "PD120") == 0) {
-		if (!(jpg_width == 640 && jpg_height == 496)) {
-			printf_s("[!] Incorrectly sized image supplied. Required 640 x 496.\n");
+	else if (strcmp(argv[1], PD120.code) == 0) {
+		if (!(jpg_width == PD120.sizeX && jpg_height == PD120.sizeY)) {
+			sizeErr(PD120.sizeX, PD120.sizeY);
 			return 0;
 		}
 		encodePD120(rgbBuffer);
 	}
 	else {
 		printf_s("[!] SSTV encode type not recognised, see -M\n");
+		return 0;
 	}
 
 	//save and exit

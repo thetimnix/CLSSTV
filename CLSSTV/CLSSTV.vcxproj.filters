@@ -47,13 +47,16 @@
     <ClInclude Include="SSTV.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
-    <ClInclude Include="BW8.h">
+    <ClInclude Include="BWX.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SC1.h">
+    <ClInclude Include="SCX.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="R36.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PDX.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
