@@ -25,10 +25,19 @@ const char* getFilenameFromPath(const char* path) {
 	return path;
 }
 
-const char* encodeTypes[] = {
-	"R36 : Robot36 (320 x 240)",
-	"SC1 : Scottie1 (320 x 256)",
-	"BW8 : Black/White 8s (160 x 120)"
+const char* encodeMSG[] = {
+	"\nIMPLEMENTED:",
+	"BW8 : Black/White 8s   (160 x 120)",
+	"R36 : Robot36          (320 x 240)",
+	"SC1 : Scottie1         (320 x 256)",
+	"SC2 : Scottie2         (320 x 256)",
+	"SCX : ScottieDX        (320 x 256)",
+
+	"\nFUTURE:",
+	"B12 : Black/White 12s  (160 x 120)",
+	"R24 : Robot24          (160 x 120)",
+	"R72 : Robot76          (320 x 240)",
+	"P50 : PD50             (320 x 256)",
 };
 
 int main(int argc, char* argv[])
@@ -36,17 +45,19 @@ int main(int argc, char* argv[])
 	//output file pointer
 	FILE* ofptr;
 
-	//print usage if args are missing
-	if (argc != 4) {
-		printf_s("USAGE:\n Arg 1: Encode type (see -modes)\n Arg 2: Input (JPG)\n Arg 3: Output (WAV)");
+	printf_s("[CLSSTV R1.0 2022]\n");
+
+	//print mode list
+	if (strcmp(argv[1], "-M") == 0) {
+		for (const char* line : encodeMSG) {
+			printf_s(" %s\n", line);
+		}
 		return 0;
 	}
 
-	//print mode list
-	if (strcmp(argv[1], "-modes") == 0) {
-		for (const char* enType : encodeTypes) {
-			printf_s(" %s\n", enType);
-		}
+	//print usage if args are missing
+	if (argc != 4) {
+		printf_s("USAGE:\n Arg 1: Encode type (see -M)\n Arg 2: Input (JPG)\n Arg 3: Output (WAV)");
 		return 0;
 	}
 
@@ -89,6 +100,20 @@ int main(int argc, char* argv[])
 			return 0;
 		}
 		encodeSC1(rgbBuffer);
+	}
+	if (strcmp(argv[1], "SC2") == 0) {
+		if (!(jpg_width == 320 && jpg_height == 256)) {
+			printf_s("Incorrectly sized image supplied. Required 320 x 256.\n");
+			return 0;
+		}
+		encodeSC2(rgbBuffer);
+	}
+	if (strcmp(argv[1], "SCX") == 0) {
+		if (!(jpg_width == 320 && jpg_height == 256)) {
+			printf_s("Incorrectly sized image supplied. Required 320 x 256.\n");
+			return 0;
+		}
+		encodeSCX(rgbBuffer);
 	}
 	if (strcmp(argv[1], "R36") == 0) {
 		if (!(jpg_width == 320 && jpg_height == 240)) {
