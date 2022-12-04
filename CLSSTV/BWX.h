@@ -13,13 +13,11 @@ void encodeBW(SSTV::rgb* rgbBuffer, double lineMS) {
     int jpg_height = 120;
 
     float mspp = lineMS / static_cast<float>(jpg_width);
-    int pxptr = 0;
     for (int y = 0; y < jpg_height; y++) {
         wav::addTone(1200, 7); //Sync pulse, no one is clear on how long this should be
         for (int x = 0; x < jpg_width; x++) {
-            SSTV::rgb c = rgbBuffer[pxptr];
-            wav::addTone(1500 + (3.13 * ((c.r + c.g + c.b) / 3)), mspp); //image data, average of RGB
-            pxptr++;
+            SSTV::rgb c = rgbBuffer[(y * jpg_width) + x];
+            wav::addTone(1500 + (CFMultiplier * ((c.r + c.g + c.b) / 3)), mspp); //image data, average of RGB
         }
     }
 }

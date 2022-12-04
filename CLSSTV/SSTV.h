@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+//used in the sum (1500 + X * CFMultiplier) to convert a byte to the approximate SSTV complient colour / luminocity frequency
+const double CFMultiplier = 3.1372549;
+
 namespace SSTV {
     int clampUC(int input);
 

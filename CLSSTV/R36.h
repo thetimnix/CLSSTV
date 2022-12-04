@@ -16,20 +16,15 @@ void encodeR36(SSTV::rgb* rgbBuffer) {
     float separatorMs = 4.5f;
     float sepPorchMs = 1.5f;
 
-    int pxptr = 0;
     for (int y = 0; y < jpg_height; y++) {
-
-        int tmpPxptr = pxptr;
         wav::addTone(1200, hSyncMs);
         wav::addTone(1500, syncPorchMs);
 
         //Y scan
         for (int x = 0; x < jpg_width; x++) {
-            SSTV::yuv c(rgbBuffer[pxptr]);
-            wav::addTone(1500 + (3.13 * c.y), mspp_Y);
-            pxptr++;
+            SSTV::yuv c(rgbBuffer[(y * jpg_width) + x]);
+            wav::addTone(1500 + (CFMultiplier * c.y), mspp_Y);
         }
-        pxptr = tmpPxptr;
 
         if (y % 2 == 0) {
             //evens
@@ -38,9 +33,8 @@ void encodeR36(SSTV::rgb* rgbBuffer) {
 
             //V scan
             for (int x = 0; x < jpg_width; x++) {
-                SSTV::yuv c(rgbBuffer[pxptr]);
-                wav::addTone(1500 + (3.13 * c.v), mspp_UV);
-                pxptr++;
+                SSTV::yuv c(rgbBuffer[(y * jpg_width) + x]);
+                wav::addTone(1500 + (CFMultiplier * c.v), mspp_UV);
             }
         }
         else {
@@ -50,9 +44,8 @@ void encodeR36(SSTV::rgb* rgbBuffer) {
 
             //U scan
             for (int x = 0; x < jpg_width; x++) {
-                SSTV::yuv c(rgbBuffer[pxptr]);
-                wav::addTone(1500 + (3.13 * c.u), mspp_UV);
-                pxptr++;
+                SSTV::yuv c(rgbBuffer[(y * jpg_width) + x]);
+                wav::addTone(1500 + (CFMultiplier * c.u), mspp_UV);
             }
         }
     }
