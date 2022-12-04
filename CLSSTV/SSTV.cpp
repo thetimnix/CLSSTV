@@ -18,7 +18,7 @@ namespace SSTV {
         wav::addTone(1500, 100);
     }
 
-    void addVisCode(char visCode) {
+    void addVisCode(char visCode, int forceParity) {
         wav::addTone(1900, 300);
         wav::addTone(1200, 10);
         wav::addTone(1900, 300);
@@ -37,8 +37,23 @@ namespace SSTV {
                 wav::addTone(1300, 30); //0
             }
         }
-        if (ones % 2 == 1) { wav::addTone(1100, 30); } //parity 1
-        else { wav::addTone(1300, 30); } //parity 0
+
+        //some modes use the parity bit weirdly, it can be forced low or high on a case-by-case basis
+        if (forceParity == 1) {
+            wav::addTone(1100, 30); //force 1
+        }
+        else if (forceParity == 0) {
+            wav::addTone(1300, 30); //force 0
+        }
+        else {
+            if (ones % 2 == 0) { 
+                wav::addTone(1300, 30); //parity 0 if even
+            } 
+            else { 
+                wav::addTone(1100, 30); //parity 1 if odd
+            } 
+        }
+
         wav::addTone(1200, 30);
     }
 }

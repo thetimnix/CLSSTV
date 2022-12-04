@@ -78,10 +78,10 @@ namespace wav {
         }
     }
 
-    void save(FILE* fptr) {
+    int save(FILE* fptr) {
         header.dataSize -= header.dataSize - bytesWritten;
         header.fileSize = header.dataSize + sizeof(wavHeader);
         memcpy(wavheap, &header, sizeof(header));
-        fwrite(wavheap, header.fileSize, 1, fptr);
+        return fwrite(wavheap, header.fileSize, 1, fptr);
     }
 }

@@ -23,7 +23,7 @@ namespace wav {
 
     int init();
     void addTone(short frequency, float duration);
-    void save(FILE* fptr);
+    int save(FILE* fptr);
 
     extern wavHeader header;
     extern double expectedDurationMS;

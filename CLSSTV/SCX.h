@@ -49,6 +49,6 @@ void encodeSC2(SSTV::rgb* rgbBuffer) {
     encodeSC(rgbBuffer, 88.064, 0x38);
 }
 
-void encodeSCX(SSTV::rgb* rgbBuffer) {
+void encodeSCDX(SSTV::rgb* rgbBuffer) {
     encodeSC(rgbBuffer, 345.600, 0x4C);
 }
