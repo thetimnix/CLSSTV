@@ -28,29 +28,46 @@ const char* getFilenameFromPath(const char* path) {
 	return path;
 }
 
-void sizeErr(int x, int y) {
-	printf_s("[!] Incorrectly sized image supplied. Required %i x %i.\n", x, y);
+struct vec2 {
+	int X;
+	int Y;
+
+	friend bool operator==(const vec2& lhs, const vec2& rhs)
+	{
+		if (lhs.X == rhs.X && lhs.Y == rhs.Y) {
+			return true;
+		}
+		return false;
+	}
+
+	friend bool operator!=(const vec2& lhs, const vec2& rhs)
+	{
+		return !(lhs == rhs);
+	}
+};
+
+void sizeErr(vec2 size) {
+	printf_s("[!] Incorrectly sized image supplied. Required %i x %i.\n", size.X, size.Y);
 }
 
 struct encMode {
 	char code[8];
 	char desc[128];
-	int sizeX;
-	int sizeY;
+	vec2 size;
 };
 
-encMode BW8 =   { "BW8",   "Black/White 8s",   160, 120 };
-encMode BW12 =  { "BW12",  "Black/White 12s",  160, 120 };
-encMode R36 =   { "R36",   "Robot36",          320, 240 };
-encMode R72 =   { "R72",   "Robot72",          320, 240 };
-encMode SC1 =   { "SC1",   "Scottie1",         320, 256 };
-encMode SC2 =   { "SC2",   "Scottie2",         320, 256 };
-encMode SCDX =  { "SCDX",  "ScottieDX",        320, 256 };
-encMode MR1 =   { "MR1",   "Martin1",          320, 256 };
-encMode MR2 =   { "MR2",   "Martin2",          320, 256 };
-encMode PD50 =  { "PD50",  "PD50",             320, 256 };
-encMode PD90 =  { "PD90",  "PD90",             320, 256 };
-encMode PD120 = { "PD120", "PD120",            640, 496 };
+encMode BW8 =   { "BW8",   "Black/White 8s",  {160, 120} };
+encMode BW12 =  { "BW12",  "Black/White 12s", {160, 120} };
+encMode R36 =   { "R36",   "Robot36",         {320, 240} };
+encMode R72 =   { "R72",   "Robot72",         {320, 240} };
+encMode SC1 =   { "SC1",   "Scottie1",        {320, 256} };
+encMode SC2 =   { "SC2",   "Scottie2",        {320, 256} };
+encMode SCDX =  { "SCDX",  "ScottieDX",       {320, 256} };
+encMode MR1 =   { "MR1",   "Martin1",         {320, 256} };
+encMode MR2 =   { "MR2",   "Martin2",         {320, 256} };
+encMode PD50 =  { "PD50",  "PD50",            {320, 256} };
+encMode PD90 =  { "PD90",  "PD90",            {320, 256} };
+encMode PD120 = { "PD120", "PD120",           {640, 496} };
 encMode modes[] = { BW8, BW12, R36, R72, SC1, SC2, SCDX, MR1, MR2, PD50, PD90, PD120 };
 
 int main(int argc, char* argv[])
@@ -63,7 +80,7 @@ int main(int argc, char* argv[])
 		printf_s(" %-8s | %-16s | %-9s\n", "CODE", "DESCRIPTION", "IMG SIZE");
 		printf_s(" %-8s | %-16s | %-9s\n", "", "", "");
 		for (encMode& line : modes) {
-			printf_s(" %-8s | %-16s | %i x %i\n", line.code, line.desc, line.sizeX, line.sizeY);
+			printf_s(" %-8s | %-16s | %i x %i\n", line.code, line.desc, line.size.X, line.size.Y);
 		}
 		return 0;
 	}
@@ -79,10 +96,9 @@ int main(int argc, char* argv[])
 	printf_s("[Beginning SSTV generation @ %iKHz]\n", wav::header.sampleRate);
 
 	//read input jpg
-	int jpg_width = 0;
-	int jpg_height = 0;
+	vec2 jpgSize = { 0, 0 };
 	int idk = 4;
-	SSTV::rgb* rgbBuffer = (SSTV::rgb*)jpgd::decompress_jpeg_image_from_file(argv[2], &jpg_width, &jpg_height, &idk, 4);
+	SSTV::rgb* rgbBuffer = (SSTV::rgb*)jpgd::decompress_jpeg_image_from_file(argv[2], &jpgSize.X, &jpgSize.Y, &idk, 4);
 	if (!rgbBuffer) { 
 		printf_s("[!] Failed to open .jpg\n"); 
 		return 0; 
@@ -105,85 +121,85 @@ int main(int argc, char* argv[])
 
 	//call individual encoders
 	if (strcmp(argv[1], BW8.code) == 0) {
-		if (!(jpg_width == BW8.sizeX && jpg_height == BW8.sizeY)) {
-			sizeErr(BW8.sizeX, BW8.sizeY);
+		if (jpgSize != BW8.size) {
+			sizeErr(BW8.size);
 			return 0;
 		}
 		encodeBW8(rgbBuffer);
 	}
 	else if (strcmp(argv[1], BW12.code) == 0) {
-		if (!(jpg_width == BW12.sizeX && jpg_height == BW12.sizeY)) {
-			sizeErr(BW12.sizeX, BW12.sizeY);
+		if (jpgSize != BW12.size) {
+			sizeErr(BW12.size);
 			return 0;
 		}
 		encodeBW12(rgbBuffer);
 	}
 	else if (strcmp(argv[1], SC1.code) == 0) {
-		if (!(jpg_width == SC1.sizeX && jpg_height == SC1.sizeY)) {
-			sizeErr(SC1.sizeX, SC1.sizeY);
+		if (jpgSize != SC1.size) {
+			sizeErr(SC1.size);
 			return 0;
 		}
 		encodeSC1(rgbBuffer);
 	}
 	else if (strcmp(argv[1], SC2.code) == 0) {
-		if (!(jpg_width == SC2.sizeX && jpg_height == SC2.sizeY)) {
-			sizeErr(SC2.sizeX, SC2.sizeY);
+		if (jpgSize != SC2.size) {
+			sizeErr(SC2.size);
 			return 0;
 		}
 		encodeSC2(rgbBuffer);
 	}
 	else if (strcmp(argv[1], SCDX.code) == 0) {
-		if (!(jpg_width == SCDX.sizeX && jpg_height == SCDX.sizeY)) {
-			sizeErr(SCDX.sizeX, SCDX.sizeY);
+		if (jpgSize != SCDX.size) {
+			sizeErr(SCDX.size);
 			return 0;
 		}
 		encodeSCDX(rgbBuffer);
 	}
 	else if (strcmp(argv[1], MR1.code) == 0) {
-		if (!(jpg_width == MR1.sizeX && jpg_height == MR1.sizeY)) {
-			sizeErr(MR1.sizeX, MR1.sizeY);
+		if (jpgSize != MR1.size) {
+			sizeErr(MR1.size);
 			return 0;
 		}
 		encodeMR1(rgbBuffer);
 	}
 	else if (strcmp(argv[1], MR2.code) == 0) {
-		if (!(jpg_width == MR2.sizeX && jpg_height == MR2.sizeY)) {
-			sizeErr(MR2.sizeX, MR2.sizeY);
+		if (jpgSize != MR2.size) {
+			sizeErr(MR2.size);
 			return 0;
 		}
 		encodeMR2(rgbBuffer);
 	}
 	else if (strcmp(argv[1], R36.code) == 0) {
-		if (!(jpg_width == R36.sizeX && jpg_height == R36.sizeY)) {
-			sizeErr(R36.sizeX, R36.sizeY);
+		if (jpgSize != R36.size) {
+			sizeErr(R36.size);
 			return 0;
 		}
 		encodeR36(rgbBuffer);
 	}
 	else if (strcmp(argv[1], R72.code) == 0) {
-		if (!(jpg_width == R72.sizeX && jpg_height == R72.sizeY)) {
-			sizeErr(R72.sizeX, R72.sizeY);
+		if (jpgSize != R72.size) {
+			sizeErr(R72.size);
 			return 0;
 		}
 		encodeR72(rgbBuffer);
 	}
 	else if (strcmp(argv[1], PD50.code) == 0) {
-		if (!(jpg_width == PD50.sizeX && jpg_height == PD50.sizeY)) {
-			sizeErr(PD50.sizeX, PD50.sizeY);
+		if (jpgSize != PD50.size) {
+			sizeErr(PD50.size);
 			return 0;
 		}
 		encodePD50(rgbBuffer);
 	}
 	else if (strcmp(argv[1], PD90.code) == 0) {
-		if (!(jpg_width == PD90.sizeX && jpg_height == PD90.sizeY)) {
-			sizeErr(PD90.sizeX, PD90.sizeY);
+		if (jpgSize != PD90.size) {
+			sizeErr(PD90.size);
 			return 0;
 		}
 		encodePD90(rgbBuffer);
 	}
 	else if (strcmp(argv[1], PD120.code) == 0) {
-		if (!(jpg_width == PD120.sizeX && jpg_height == PD120.sizeY)) {
-			sizeErr(PD120.sizeX, PD120.sizeY);
+		if (jpgSize != PD120.size) {
+			sizeErr(PD120.size);
 			return 0;
 		}
 		encodePD120(rgbBuffer);
