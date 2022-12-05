@@ -150,6 +150,7 @@
     <ClInclude Include="jpgd.h" />
     <ClInclude Include="jpgd_idct.h" />
     <ClInclude Include="jpge.h" />
+    <ClInclude Include="MRX.h" />
     <ClInclude Include="PDX.h" />
     <ClInclude Include="R36.h" />
     <ClInclude Include="SCX.h" />

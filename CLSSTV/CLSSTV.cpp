@@ -6,7 +6,8 @@
 #include "BWX.h" //BW8, BW12
 #include "SCX.h" //Scottie1, Scottie2, ScottieDX
 #include "R36.h" //Robot36
-#include "PDX.h"
+#include "PDX.h" //PD50, PD90, PD120
+#include "MRX.h" //Martin1, Martin2
 
 const char* getFilenameFromPath(const char* path) {
 	int slashIndex = -1;
@@ -43,20 +44,12 @@ encMode R36 =   { "R36",   "Robot36",         320, 240 };
 encMode SC1 =   { "SC1",   "Scottie1",        320, 256 };
 encMode SC2 =   { "SC2",   "Scottie2",        320, 256 };
 encMode SCDX =  { "SCDX",  "ScottieDX",       320, 256 };
+encMode MR1 =   { "MR1",   "Martin1",         320, 256 };
+encMode MR2 =   { "MR2",   "Martin2",         320, 256 };
 encMode PD50 =  { "PD50",  "PD50",            320, 256 };
 encMode PD90 =  { "PD90",  "PD90",            320, 256 };
 encMode PD120 = { "PD120", "PD120",           640, 496 };
-encMode modes[] = { BW8, BW12, R36, SC1, SC2, SCDX, PD50, PD90, PD120 };
-
-bool validateMode(encMode mode, char* arg, int jpg_width, int jpg_height) {
-	if (strcmp(arg, mode.code) == 0) {
-		if (!(jpg_width == mode.sizeX && jpg_height == mode.sizeY)) {
-			sizeErr(mode.sizeX, mode.sizeY);
-			return false;
-		}
-		return true;
-	}
-}
+encMode modes[] = { BW8, BW12, R36, SC1, SC2, SCDX, MR1, MR2, PD50, PD90, PD120 };
 
 int main(int argc, char* argv[])
 {
@@ -80,7 +73,7 @@ int main(int argc, char* argv[])
 	}
 
 	//begin encode
-	printf_s("[CLSSTV R1.2 2022]\n");
+	printf_s("[CLSSTV R1.3 2022]\n");
 	printf_s("[Beginning SSTV generation @ %iKHz]\n", wav::header.sampleRate);
 
 	//read input jpg
@@ -143,6 +136,20 @@ int main(int argc, char* argv[])
 			return 0;
 		}
 		encodeSCDX(rgbBuffer);
+	}
+	else if (strcmp(argv[1], MR1.code) == 0) {
+		if (!(jpg_width == MR1.sizeX && jpg_height == MR1.sizeY)) {
+			sizeErr(MR1.sizeX, MR1.sizeY);
+			return 0;
+		}
+		encodeMR1(rgbBuffer);
+	}
+	else if (strcmp(argv[1], MR2.code) == 0) {
+		if (!(jpg_width == MR2.sizeX && jpg_height == MR2.sizeY)) {
+			sizeErr(MR2.sizeX, MR2.sizeY);
+			return 0;
+		}
+		encodeMR2(rgbBuffer);
 	}
 	else if (strcmp(argv[1], R36.code) == 0) {
 		if (!(jpg_width == R36.sizeX && jpg_height == R36.sizeY)) {

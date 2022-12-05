@@ -21,7 +21,7 @@ void encodePD(SSTV::rgb* rgbBuffer, int jpg_width, int jpg_height, double lineMS
             wav::addTone(1500 + (CFMultiplier * c.y), mspp);
         }
 
-        //Avg V and U of both lines
+        //Avg V and U average of both lines
         for (int x = 0; x < jpg_width; x++) { //V
             SSTV::yuv c1(rgbBuffer[(y * jpg_width) + x]);
             SSTV::yuv c2(rgbBuffer[((y + 1) * jpg_width) + x]);

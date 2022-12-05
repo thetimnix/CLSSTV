@@ -59,5 +59,8 @@
     <ClInclude Include="PDX.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MRX.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
