@@ -6,6 +6,7 @@
 #include "BWX.h" //BW8, BW12
 #include "SCX.h" //Scottie1, Scottie2, ScottieDX
 #include "R36.h" //Robot36
+#include "R72.h" //Robot72
 #include "PDX.h" //PD50, PD90, PD120
 #include "MRX.h" //Martin1, Martin2
 
@@ -38,18 +39,19 @@ struct encMode {
 	int sizeY;
 };
 
-encMode BW8 =   { "BW8",   "Black/White 8s",  160, 120 };
-encMode BW12 =  { "BW12",  "Black/White 12s", 160, 120 };
-encMode R36 =   { "R36",   "Robot36",         320, 240 };
-encMode SC1 =   { "SC1",   "Scottie1",        320, 256 };
-encMode SC2 =   { "SC2",   "Scottie2",        320, 256 };
-encMode SCDX =  { "SCDX",  "ScottieDX",       320, 256 };
-encMode MR1 =   { "MR1",   "Martin1",         320, 256 };
-encMode MR2 =   { "MR2",   "Martin2",         320, 256 };
-encMode PD50 =  { "PD50",  "PD50",            320, 256 };
-encMode PD90 =  { "PD90",  "PD90",            320, 256 };
-encMode PD120 = { "PD120", "PD120",           640, 496 };
-encMode modes[] = { BW8, BW12, R36, SC1, SC2, SCDX, MR1, MR2, PD50, PD90, PD120 };
+encMode BW8 =   { "BW8",   "Black/White 8s",   160, 120 };
+encMode BW12 =  { "BW12",  "Black/White 12s",  160, 120 };
+encMode R36 =   { "R36",   "Robot36",          320, 240 };
+encMode R72 =   { "R72",   "Robot72",          320, 240 };
+encMode SC1 =   { "SC1",   "Scottie1",         320, 256 };
+encMode SC2 =   { "SC2",   "Scottie2",         320, 256 };
+encMode SCDX =  { "SCDX",  "ScottieDX",        320, 256 };
+encMode MR1 =   { "MR1",   "Martin1",          320, 256 };
+encMode MR2 =   { "MR2",   "Martin2",          320, 256 };
+encMode PD50 =  { "PD50",  "PD50",             320, 256 };
+encMode PD90 =  { "PD90",  "PD90",             320, 256 };
+encMode PD120 = { "PD120", "PD120",            640, 496 };
+encMode modes[] = { BW8, BW12, R36, R72, SC1, SC2, SCDX, MR1, MR2, PD50, PD90, PD120 };
 
 int main(int argc, char* argv[])
 {
@@ -73,7 +75,7 @@ int main(int argc, char* argv[])
 	}
 
 	//begin encode
-	printf_s("[CLSSTV R1.3 2022]\n");
+	printf_s("[CLSSTV R1.4 2022]\n");
 	printf_s("[Beginning SSTV generation @ %iKHz]\n", wav::header.sampleRate);
 
 	//read input jpg
@@ -157,6 +159,13 @@ int main(int argc, char* argv[])
 			return 0;
 		}
 		encodeR36(rgbBuffer);
+	}
+	else if (strcmp(argv[1], R72.code) == 0) {
+		if (!(jpg_width == R72.sizeX && jpg_height == R72.sizeY)) {
+			sizeErr(R72.sizeX, R72.sizeY);
+			return 0;
+		}
+		encodeR72(rgbBuffer);
 	}
 	else if (strcmp(argv[1], PD50.code) == 0) {
 		if (!(jpg_width == PD50.sizeX && jpg_height == PD50.sizeY)) {

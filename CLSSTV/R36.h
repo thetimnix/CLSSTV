@@ -33,8 +33,9 @@ void encodeR36(SSTV::rgb* rgbBuffer) {
 
             //V scan
             for (int x = 0; x < jpg_width; x++) {
-                SSTV::yuv c(rgbBuffer[(y * jpg_width) + x]);
-                wav::addTone(1500 + (CFMultiplier * c.v), mspp_UV);
+                SSTV::yuv c1(rgbBuffer[(y * jpg_width) + x]);
+                SSTV::yuv c2(rgbBuffer[((y + 1) * jpg_width) + x]);
+                wav::addTone(1500 + (CFMultiplier * ((c1.v + c2.v) / 2)), mspp_UV);
             }
         }
         else {
@@ -44,8 +45,9 @@ void encodeR36(SSTV::rgb* rgbBuffer) {
 
             //U scan
             for (int x = 0; x < jpg_width; x++) {
-                SSTV::yuv c(rgbBuffer[(y * jpg_width) + x]);
-                wav::addTone(1500 + (CFMultiplier * c.u), mspp_UV);
+                SSTV::yuv c1(rgbBuffer[(y * jpg_width) + x]);
+                SSTV::yuv c2(rgbBuffer[((y - 1) * jpg_width) + x]);
+                wav::addTone(1500 + (CFMultiplier * ((c1.u + c2.u) / 2)), mspp_UV);
             }
         }
     }
