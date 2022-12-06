@@ -12,9 +12,9 @@
 
 const char* getFilenameFromPath(const char* path) {
 	const char* filename = path;
-	for (int i = 0; i < strlen(path); i++) {
-		if (path[i] == '\/') {
-			filename = &path[i + 1];
+	for (int x = strlen(path); x > 0; x--) {
+		if (path[x] == '\/') {
+			filename = &path[x + 1];
 		}
 	}
 	return filename;
@@ -61,7 +61,7 @@ SSTV::rgb* readBitmap(const char* path, int& width, int& height) {
 	int padding = (4 - (width * (bitDepth / 8)) % 4) % 4;
 
 	//allocate memory for the image
-	SSTV::rgb* image = (SSTV::rgb*)malloc(width * height * sizeof(SSTV::rgb));
+	SSTV::rgb* image = (SSTV::rgb*)malloc((width * height) * sizeof(SSTV::rgb));
 	if (!image) { return nullptr; }
 
 	//read the image
@@ -118,6 +118,7 @@ encMode MR2 =   { "MR2",   "Martin2",         {320, 256} };
 encMode PD50 =  { "PD50",  "PD50",            {320, 256} };
 encMode PD90 =  { "PD90",  "PD90",            {320, 256} };
 encMode PD120 = { "PD120", "PD120",           {640, 496} };
+
 encMode modes[] = { BW8, BW12, R36, R72, SC1, SC2, SCDX, MR1, MR2, PD50, PD90, PD120 };
 
 int main(int argc, char* argv[])
