@@ -11,43 +11,93 @@
 #include "MRX.h" //Martin1, Martin2
 
 const char* getFilenameFromPath(const char* path) {
-	int slashIndex = -1;
-	int remainingLength = -1;
-	for (int x = strlen(path); x > 0; x--) {
-		if (path[x] == '\/') {
-			slashIndex = x;
-			remainingLength = strlen(path) - x;
+	const char* filename = path;
+	for (int i = 0; i < strlen(path); i++) {
+		if (path[i] == '\/') {
+			filename = &path[i + 1];
 		}
 	}
-	if (slashIndex > -1) {
-		char* processedFileName = (char*)malloc(remainingLength);
-		if (!processedFileName) { return path; }
-		sprintf_s(processedFileName, remainingLength, path + (slashIndex + 1));
-		return processedFileName;
+	return filename;
+}
+
+enum fileType {
+	FT_ERR,
+	FT_BMP,
+	FT_JPG
+};
+
+fileType readFileType(const char* path) {
+	FILE* file;
+	fopen_s(&file, path, "rb");
+	if (!file) { return fileType::FT_ERR; }
+
+	unsigned char header[2];
+	fread(header, 1, 2, file);
+	fclose(file);
+
+	if (header[0] == 'B' && header[1] == 'M') { return fileType::FT_BMP; }
+	if (header[0] == 0xFF && header[1] == 0xD8) { return fileType::FT_JPG; }
+
+	return fileType::FT_ERR;
+}
+
+SSTV::rgb* readBitmap(const char* path, int& width, int& height) {
+	FILE* file;
+	fopen_s(&file, path, "rb");
+	if (!file) { return nullptr; }
+
+	//read the header
+	unsigned char header[54];
+	fread(header, 1, 54, file);
+
+	//get the width and height
+	width = *(int*)&header[18];
+	height = *(int*)&header[22];
+
+	//get the bitdepth
+	int bitDepth = *(int*)&header[28];
+
+	//get the padding
+	int padding = (4 - (width * (bitDepth / 8)) % 4) % 4;
+
+	//allocate memory for the image
+	SSTV::rgb* image = (SSTV::rgb*)malloc(width * height * sizeof(SSTV::rgb));
+	if (!image) { return nullptr; }
+
+	//read the image
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
+			unsigned char pixel[3];
+			fread(pixel, 1, 3, file);
+			image[(height - y - 1) * width + x] = SSTV::rgb(pixel[2], pixel[1], pixel[0]);
+		}
+		fseek(file, padding, SEEK_CUR);
 	}
-	return path;
+
+	fclose(file);
+	return image;
 }
 
 struct vec2 {
 	int X;
 	int Y;
 
-	friend bool operator==(const vec2& lhs, const vec2& rhs)
+	bool operator == (const vec2& rhs)
 	{
-		if (lhs.X == rhs.X && lhs.Y == rhs.Y) {
+		if (X == rhs.X && Y == rhs.Y) {
 			return true;
 		}
 		return false;
 	}
 
-	friend bool operator!=(const vec2& lhs, const vec2& rhs)
+	bool operator != (const vec2& rhs)
 	{
-		return !(lhs == rhs);
+		return !(*this == rhs);
 	}
 };
 
 void sizeErr(vec2 size) {
-	printf_s("[!] Incorrectly sized image supplied. Required %i x %i.\n", size.X, size.Y);
+	printf_s("[ERR] Incorrectly sized image supplied. Required %i x %i.\n", size.X, size.Y);
 }
 
 struct encMode {
@@ -71,7 +121,7 @@ encMode PD120 = { "PD120", "PD120",           {640, 496} };
 encMode modes[] = { BW8, BW12, R36, R72, SC1, SC2, SCDX, MR1, MR2, PD50, PD90, PD120 };
 
 int main(int argc, char* argv[])
-{
+{	
 	//output file pointer
 	FILE* ofptr;
 
@@ -98,15 +148,30 @@ int main(int argc, char* argv[])
 	//read input jpg
 	vec2 jpgSize = { 0, 0 };
 	int idk = 4;
-	SSTV::rgb* rgbBuffer = (SSTV::rgb*)jpgd::decompress_jpeg_image_from_file(argv[2], &jpgSize.X, &jpgSize.Y, &idk, 4);
+	SSTV::rgb* rgbBuffer = nullptr;
+
+	switch (readFileType(argv[2])) {
+		case FT_JPG:
+			rgbBuffer = (SSTV::rgb*)jpgd::decompress_jpeg_image_from_file(argv[2], &jpgSize.X, &jpgSize.Y, &idk, 4);
+			break;
+			
+		case FT_BMP:
+			rgbBuffer = readBitmap(argv[2], jpgSize.X, jpgSize.Y);
+			break;
+
+		case FT_ERR:
+			printf_s("[ERR] Could not read source file\n");
+			return 0;
+	}
+	
 	if (!rgbBuffer) { 
-		printf_s("[!] Failed to open .jpg\n"); 
-		return 0; 
+		printf_s("[ERR] Could not read source file\n");
+		return 0;
 	}
 
 	//init wav system
 	if (!wav::init()) {
-		printf_s("[!] Issue while allocating WAV memory\n");
+		printf_s("[ERR] Could not allocate WAV memory\n");
 		return 0;
 	}
 	
@@ -115,7 +180,7 @@ int main(int argc, char* argv[])
 	if (openErrNo != 0) {
 		char errBuffer[256] = {};
 		strerror_s(errBuffer, openErrNo);
-		printf_s("[!] Issue opening output file (%s)\n", errBuffer);
+		printf_s("[ERR] Could not open output file (%s)\n", errBuffer);
 		return 0;
 	}
 
@@ -205,7 +270,7 @@ int main(int argc, char* argv[])
 		encodePD120(rgbBuffer);
 	}
 	else {
-		printf_s("[!] SSTV encode type not recognised, see -M\n");
+		printf_s("[ERR] SSTV encode type not recognised, see -M\n");
 		return 0;
 	}
 
@@ -213,7 +278,7 @@ int main(int argc, char* argv[])
 	if (wav::save(ofptr) <= 0) {
 		char errBuffer[256] = {};
 		strerror_s(errBuffer, errno);
-		printf_s("[!] Issue opening output file (%s)\n", errBuffer);
+		printf_s("[ERR] Issue opening output file (%s)\n", errBuffer);
 		return 0;
 	}
 
