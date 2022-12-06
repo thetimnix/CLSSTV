@@ -2,6 +2,7 @@
 #include "SSTV.h"
 #include "wav.h"
 #include "jpgd.h"
+#include "textRendering.h"
 
 #include "BWX.h" //BW8, BW12
 #include "SCX.h" //Scottie1, Scottie2, ScottieDX

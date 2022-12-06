@@ -143,6 +143,7 @@
     <ClCompile Include="jpgd.cpp" />
     <ClCompile Include="jpge.cpp" />
     <ClCompile Include="SSTV.cpp" />
+    <ClCompile Include="textRendering.cpp" />
     <ClCompile Include="wav.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -156,6 +157,7 @@
     <ClInclude Include="R72.h" />
     <ClInclude Include="SCX.h" />
     <ClInclude Include="SSTV.h" />
+    <ClInclude Include="textRendering.h" />
     <ClInclude Include="wav.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

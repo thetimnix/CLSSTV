@@ -30,6 +30,9 @@
     <ClCompile Include="SSTV.cpp">
       <Filter>Resource Files</Filter>
     </ClCompile>
+    <ClCompile Include="textRendering.cpp">
+      <Filter>Resource Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="jpgd.h">
@@ -63,6 +66,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="R72.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="textRendering.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
