@@ -127,6 +127,9 @@ int main(int argc, char* argv[])
 	//output file pointer
 	FILE* ofptr;
 
+	//init drawing system
+	tr::initFont();
+	
 	//print mode list if requested
 	if (strcmp(argv[1], "-M") == 0) {
 		printf_s(" %-8s | %-16s | %-9s\n", "CODE", "DESCRIPTION", "IMG SIZE");
@@ -283,7 +286,7 @@ int main(int argc, char* argv[])
 		printf_s("[ERR] Issue opening output file (%s)\n", errBuffer);
 		return 0;
 	}
-
+	
 	printf_s("[Encode complete, wrote %i bytes to %s]\n", wav::header.fileSize, getFilenameFromPath(argv[3]));
 	printf_s(" Expected time: %f MS\n", wav::expectedDurationMS);
 	printf_s(" Actual time:   %f MS\n", wav::actualDurationMS);
