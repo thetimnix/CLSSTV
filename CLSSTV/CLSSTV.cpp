@@ -2,6 +2,7 @@
 #include "SSTV.h"
 #include "wav.h"
 #include "jpgd.h"
+#include "jpge.h"
 #include "textRendering.h"
 
 #include "BWX.h" //BW8, BW12
@@ -121,6 +122,12 @@ encMode PD90 =  { "PD90",  "PD90",            {320, 256} };
 encMode PD120 = { "PD120", "PD120",           {640, 496} };
 
 encMode modes[] = { BW8, BW12, R36, R72, SC1, SC2, SCDX, MR1, MR2, PD50, PD90, PD120 };
+
+struct RGBPure {
+	unsigned char R;
+	unsigned char G;
+	unsigned char B;
+};
 
 int main(int argc, char* argv[])
 {	
