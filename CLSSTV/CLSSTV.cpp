@@ -80,6 +80,30 @@ SSTV::rgb* readBitmap(const char* path, int& width, int& height) {
 	return image;
 }
 
+SSTV::rgb* resizeNN(SSTV::rgb* input, vec2 inputSize, vec2 newSize) {
+	if (inputSize == newSize) {
+		return input;
+	}
+	
+	SSTV::rgb* output = new SSTV::rgb[newSize.Y * newSize.X];
+	if (!output) { return nullptr; }
+
+	float xScale = (float)newSize.X / (float)inputSize.X;
+	float yScale = (float)newSize.Y / (float)inputSize.Y;
+
+	for (int y = 0; y < newSize.Y; y++) {
+		for (int x = 0; x < newSize.X; x++) {
+			int writeIndex = y * newSize.X + x;
+			int readIndex = (int)(y / yScale) * inputSize.X + (int)(x / xScale);
+			if (writeIndex < (newSize.Y * newSize.X) && readIndex < (inputSize.X * inputSize.Y)) {
+				output[writeIndex] = input[readIndex];
+			}
+		}
+	}
+
+	return output;
+}
+
 void sizeErr(vec2 size) {
 	printf_s("[ERR] Incorrectly sized image supplied. Required %i x %i.\n", size.X, size.Y);
 }
@@ -158,13 +182,15 @@ int main(int argc, char* argv[])
 			return 0;
 	}
 
-	tr::drawString(rgbBuffer, jpgSize, { 0, 0 }, "CLSSTV HAS TEXT");
+	//tr::drawString(rgbBuffer, jpgSize, { 0, 0 }, "CLSSTV!");
+
+	SSTV::rgb* resized = resizeNN(rgbBuffer, jpgSize, { 320, 240 });
 	
-	RGBPure* converted = new RGBPure[jpgSize.X * jpgSize.Y];
-	for (int i = 0; i < jpgSize.X * jpgSize.Y; i++) {
-		converted[i] = { rgbBuffer[i].r, rgbBuffer[i].g, rgbBuffer[i].b };
-	}
-	jpge::compress_image_to_jpeg_file("test.jpg", jpgSize.X, jpgSize.Y, 3, (const unsigned char*)converted);
+	//RGBPure* converted = new RGBPure[320 * 240];
+	//for (int i = 0; i < 320 * 240; i++) {
+	//	converted[i] = { resized[i].r, resized[i].g, resized[i].b };
+	//}
+	//jpge::compress_image_to_jpeg_file("test.jpg", 320, 240, 3, (const unsigned char*)converted);
 	
 	if (!rgbBuffer) { 
 		printf_s("[ERR] Could not read source file\n");
