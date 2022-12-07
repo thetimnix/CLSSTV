@@ -10,7 +10,7 @@
 #include "R36.h" //Robot36
 #include "R72.h" //Robot72
 #include "PDX.h" //PD50, PD90, PD120
-#include "MRX.h" //Martin1, Martin2
+#include "MRX.h" //Martin1, Martin2 
 
 const char* getFilenameFromPath(const char* path) {
 	const char* filename = path;
@@ -29,14 +29,17 @@ enum fileType {
 };
 
 fileType readFileType(const char* path) {
+	//open file
 	FILE* file;
 	fopen_s(&file, path, "rb");
 	if (!file) { return fileType::FT_ERR; }
 
+	//alloc space and read the files header
 	unsigned char header[2];
 	fread(header, 1, 2, file);
 	fclose(file);
 
+	//compare file header and return
 	if (header[0] == 'B' && header[1] == 'M') { return fileType::FT_BMP; }
 	if (header[0] == 0xFF && header[1] == 0xD8) { return fileType::FT_JPG; }
 
@@ -81,21 +84,29 @@ SSTV::rgb* readBitmap(const char* path, int& width, int& height) {
 }
 
 SSTV::rgb* resizeNN(SSTV::rgb* input, vec2 inputSize, vec2 newSize) {
+	//dont need to do anything if its already the right size, return the origional to save memory
 	if (inputSize == newSize) {
 		return input;
 	}
 	
+	printf_s("[Resizing. This is not recommended, resize manually first!]\n");
+	
 	SSTV::rgb* output = new SSTV::rgb[newSize.Y * newSize.X];
 	if (!output) { return nullptr; }
 
+	//calc scale values
 	float xScale = (float)newSize.X / (float)inputSize.X;
 	float yScale = (float)newSize.Y / (float)inputSize.Y;
 
 	for (int y = 0; y < newSize.Y; y++) {
 		for (int x = 0; x < newSize.X; x++) {
+			
+			//get the nearest pixel in the input image using the x and y scale values
 			int writeIndex = y * newSize.X + x;
 			int readIndex = (int)(y / yScale) * inputSize.X + (int)(x / xScale);
-			if (writeIndex < (newSize.Y * newSize.X) && readIndex < (inputSize.X * inputSize.Y)) {
+
+			//set the pixel to the closest value, avoid any over/underflows. VS still complains about the possibility.
+			if (writeIndex < (newSize.Y * newSize.X) && readIndex < (inputSize.X * inputSize.Y) && writeIndex >= 0 && readIndex >= 0) {
 				output[writeIndex] = input[readIndex];
 			}
 		}
@@ -104,36 +115,42 @@ SSTV::rgb* resizeNN(SSTV::rgb* input, vec2 inputSize, vec2 newSize) {
 	return output;
 }
 
-void sizeErr(vec2 size) {
-	printf_s("[ERR] Incorrectly sized image supplied. Required %i x %i.\n", size.X, size.Y);
-}
+enum encModeID {
+	EM_BW8,
+	EM_BW12,
+	EM_R36,
+	EM_R72,
+	EM_SC1,
+	EM_SC2,
+	EM_SCDX,
+	EM_MR1,
+	EM_MR2,
+	EM_PD50,
+	EM_PD90,
+	EM_PD120
+};
 
 struct encMode {
+	encModeID ID;
 	char code[8];
 	char desc[128];
 	vec2 size;
 };
 
-encMode BW8 =   { "BW8",   "Black/White 8s",  {160, 120} };
-encMode BW12 =  { "BW12",  "Black/White 12s", {160, 120} };
-encMode R36 =   { "R36",   "Robot36",         {320, 240} };
-encMode R72 =   { "R72",   "Robot72",         {320, 240} };
-encMode SC1 =   { "SC1",   "Scottie1",        {320, 256} };
-encMode SC2 =   { "SC2",   "Scottie2",        {320, 256} };
-encMode SCDX =  { "SCDX",  "ScottieDX",       {320, 256} };
-encMode MR1 =   { "MR1",   "Martin1",         {320, 256} };
-encMode MR2 =   { "MR2",   "Martin2",         {320, 256} };
-encMode PD50 =  { "PD50",  "PD50",            {320, 256} };
-encMode PD90 =  { "PD90",  "PD90",            {320, 256} };
-encMode PD120 = { "PD120", "PD120",           {640, 496} };
+encMode BW8 =   { EM_BW8,   "BW8",   "Black/White 8s",  {160, 120} };
+encMode BW12 =  { EM_BW12,  "BW12",  "Black/White 12s", {160, 120} };
+encMode R36 =   { EM_R36,   "R36",   "Robot36",         {320, 240} };
+encMode R72 =   { EM_R72,   "R72",   "Robot72",         {320, 240} };
+encMode SC1 =   { EM_SC1,   "SC1",   "Scottie1",        {320, 256} };
+encMode SC2 =   { EM_SC2,   "SC2",   "Scottie2",        {320, 256} };
+encMode SCDX =  { EM_SCDX,  "SCDX",  "ScottieDX",       {320, 256} };
+encMode MR1 =   { EM_MR1,   "MR1",   "Martin1",         {320, 256} };
+encMode MR2 =   { EM_MR2,   "MR2",   "Martin2",         {320, 256} };
+encMode PD50 =  { EM_PD50,  "PD50",  "PD50",            {320, 256} };
+encMode PD90 =  { EM_PD90,  "PD90",  "PD90",            {320, 256} };
+encMode PD120 = { EM_PD120, "PD120", "PD120",           {640, 496} };
 
 encMode modes[] = { BW8, BW12, R36, R72, SC1, SC2, SCDX, MR1, MR2, PD50, PD90, PD120 };
-
-struct RGBPure {
-	unsigned char R;
-	unsigned char G;
-	unsigned char B;
-};
 
 int main(int argc, char* argv[])
 {	
@@ -181,16 +198,6 @@ int main(int argc, char* argv[])
 			printf_s("[ERR] Could not read source file\n");
 			return 0;
 	}
-
-	//tr::drawString(rgbBuffer, jpgSize, { 0, 0 }, "CLSSTV!");
-
-	SSTV::rgb* resized = resizeNN(rgbBuffer, jpgSize, { 320, 240 });
-	
-	//RGBPure* converted = new RGBPure[320 * 240];
-	//for (int i = 0; i < 320 * 240; i++) {
-	//	converted[i] = { resized[i].r, resized[i].g, resized[i].b };
-	//}
-	//jpge::compress_image_to_jpeg_file("test.jpg", 320, 240, 3, (const unsigned char*)converted);
 	
 	if (!rgbBuffer) { 
 		printf_s("[ERR] Could not read source file\n");
@@ -212,96 +219,85 @@ int main(int argc, char* argv[])
 		return 0;
 	}
 
-	//call individual encoders
-	if (strcmp(argv[1], BW8.code) == 0) {
-		if (jpgSize != BW8.size) {
-			sizeErr(BW8.size);
-			return 0;
+	//find and set user selected encoding mode
+	encMode* selectedEncMode = 0;
+	SSTV::rgb* resizedRGB = 0;
+	bool validEncMode = false;
+	for (encMode& em : modes) {
+		if (strcmp(argv[1], em.code) == 0) {
+			//get enc mode
+			selectedEncMode = &em;
+			//resize image if required
+			//resizedRGB = resizeNN(rgbBuffer, jpgSize, em.size);
+			resizedRGB = generateTestPattern(em.size);
+			//draw required text ontop of resizedRGB
+			tr::drawString(resizedRGB, em.size, { 0, 0 }, "CLSSTV!");
+			//exit loop
+			validEncMode = true;
+			break;
 		}
-		encodeBW8(rgbBuffer);
 	}
-	else if (strcmp(argv[1], BW12.code) == 0) {
-		if (jpgSize != BW12.size) {
-			sizeErr(BW12.size);
-			return 0;
-		}
-		encodeBW12(rgbBuffer);
-	}
-	else if (strcmp(argv[1], SC1.code) == 0) {
-		if (jpgSize != SC1.size) {
-			sizeErr(SC1.size);
-			return 0;
-		}
-		encodeSC1(rgbBuffer);
-	}
-	else if (strcmp(argv[1], SC2.code) == 0) {
-		if (jpgSize != SC2.size) {
-			sizeErr(SC2.size);
-			return 0;
-		}
-		encodeSC2(rgbBuffer);
-	}
-	else if (strcmp(argv[1], SCDX.code) == 0) {
-		if (jpgSize != SCDX.size) {
-			sizeErr(SCDX.size);
-			return 0;
-		}
-		encodeSCDX(rgbBuffer);
-	}
-	else if (strcmp(argv[1], MR1.code) == 0) {
-		if (jpgSize != MR1.size) {
-			sizeErr(MR1.size);
-			return 0;
-		}
-		encodeMR1(rgbBuffer);
-	}
-	else if (strcmp(argv[1], MR2.code) == 0) {
-		if (jpgSize != MR2.size) {
-			sizeErr(MR2.size);
-			return 0;
-		}
-		encodeMR2(rgbBuffer);
-	}
-	else if (strcmp(argv[1], R36.code) == 0) {
-		if (jpgSize != R36.size) {
-			sizeErr(R36.size);
-			return 0;
-		}
-		encodeR36(rgbBuffer);
-	}
-	else if (strcmp(argv[1], R72.code) == 0) {
-		if (jpgSize != R72.size) {
-			sizeErr(R72.size);
-			return 0;
-		}
-		encodeR72(rgbBuffer);
-	}
-	else if (strcmp(argv[1], PD50.code) == 0) {
-		if (jpgSize != PD50.size) {
-			sizeErr(PD50.size);
-			return 0;
-		}
-		encodePD50(rgbBuffer);
-	}
-	else if (strcmp(argv[1], PD90.code) == 0) {
-		if (jpgSize != PD90.size) {
-			sizeErr(PD90.size);
-			return 0;
-		}
-		encodePD90(rgbBuffer);
-	}
-	else if (strcmp(argv[1], PD120.code) == 0) {
-		if (jpgSize != PD120.size) {
-			sizeErr(PD120.size);
-			return 0;
-		}
-		encodePD120(rgbBuffer);
-	}
-	else {
+	
+	if(!validEncMode) {
 		printf_s("[ERR] SSTV encode type not recognised, see -M\n");
 		return 0;
 	}
+	
+	//call actual encode function
+	switch (selectedEncMode->ID) {
+		case(EM_BW8):
+			encodeBW8(resizedRGB);
+			break;
+		
+		case(EM_BW12):
+			encodeBW12(resizedRGB);
+			break;
+		
+		case(EM_R36):
+			encodeR36(resizedRGB);
+			break;
+		
+		case(EM_R72):
+			encodeR72(resizedRGB);
+			break;
+		
+		case(EM_SC1):
+			encodeSC1(resizedRGB);
+			break;
 
+		case(EM_SC2):
+			encodeSC2(resizedRGB);
+			break;
+
+		case(EM_SCDX):
+			encodeSCDX(resizedRGB);
+			break;
+
+		case(EM_MR1):
+			encodeMR1(resizedRGB);
+			break;
+
+		case(EM_MR2):
+			encodeMR2(resizedRGB);
+			break;
+
+		case(EM_PD50):
+			encodePD50(resizedRGB);
+			break;
+
+		case(EM_PD90):
+			encodePD90(resizedRGB);
+			break;
+
+		case(EM_PD120):
+			encodePD120(resizedRGB);
+			break;
+		
+		default:
+			printf_s("[ERR] Invalid encCode ID");
+			return 0;
+	}
+	
 	//save and exit
 	if (wav::save(ofptr) <= 0) {
 		char errBuffer[256] = {};
