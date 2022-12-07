@@ -346,32 +346,32 @@ namespace tr {
 		{'Y', 9, 5},
 		{'Z', 10, 5},
 
-		{'a', 1, 7},
-		{'b', 2, 7},
-		{'c', 3, 7},
-		{'d', 4, 7},
-		{'e', 5, 7},
-		{'f', 6, 7},
-		{'g', 7, 7},
-		{'h', 8, 7},
-		{'i', 9, 7},
-		{'j', 10, 7},
-		{'k', 11, 7},
-		{'l', 12, 7},
-		{'m', 13, 7},
-		{'n', 14, 7},
-		{'o', 15, 7},
-		{'p', 0, 8},
-		{'q', 1, 8},
-		{'r', 2, 8},
-		{'s', 3, 8},
-		{'t', 4, 8},
-		{'u', 5, 8},
-		{'v', 6, 8},
-		{'w', 7, 8},
-		{'x', 8, 8},
-		{'y', 9, 8},
-		{'z', 10, 8},
+		{'a', 1, 6},
+		{'b', 2, 6},
+		{'c', 3, 6},
+		{'d', 4, 6},
+		{'e', 5, 6},
+		{'f', 6, 6},
+		{'g', 7, 6},
+		{'h', 8, 6},
+		{'i', 9, 6},
+		{'j', 10, 6},
+		{'k', 11, 6},
+		{'l', 12, 6},
+		{'m', 13, 6},
+		{'n', 14, 6},
+		{'o', 15, 6},
+		{'p', 0, 7},
+		{'q', 1, 7},
+		{'r', 2, 7},
+		{'s', 3, 7},
+		{'t', 4, 7},
+		{'u', 5, 7},
+		{'v', 6, 7},
+		{'w', 7, 7},
+		{'x', 8, 7},
+		{'y', 9, 7},
+		{'z', 10, 7},
 	};
 
 	void drawCharacter(SSTV::rgb* canvas, vec2 canvasSize, char c, vec2 pos) {
@@ -379,8 +379,8 @@ namespace tr {
 			if (map.c == c) {
 				vec2 mapPosExpanded = { (map.mapX * 8) + ((map.mapX * 8) / 8), (map.mapY * 16) + ((map.mapY * 16) / 16) };
 
-				printf_s("%c\n", c);
-				printf_s("pos: %i %i\n", mapPosExpanded.X, mapPosExpanded.Y);
+				//printf_s("%c\n", c);
+				//printf_s("pos: %i %i\n", mapPosExpanded.X, mapPosExpanded.Y);
 				
 				for (int y = 0; y < 16; y++) {
 					for (int x = 0; x < 8; x++) {
@@ -393,11 +393,27 @@ namespace tr {
 
 	//text overrunning the edge of the provided canvas will be truncated
 	void drawString(SSTV::rgb* canvas, vec2 canvasSize, vec2 pos, const char* fmt...) {
+		
+		//format string into buffer
 		va_list lst;
 		va_start(lst, fmt);
-		char buffer[128];
-		vsnprintf(buffer, 128, fmt, lst);
+		char buffer[64];
+		vsnprintf(buffer, 64, fmt, lst);
 
+		//draw the background rectangle
+		int backgroundRectX = strlen(buffer) * 9 + 1;
+		int backgroundRectY = 16;
+		
+		for (int x = 0; x < backgroundRectX; x++) {
+			for (int y = 0; y < backgroundRectY; y++){
+				canvas[((pos.Y + y) * canvasSize.X) + (pos.X + x)] = { 0, 0, 0 }; 
+			}
+		}
+		
+		//shift forward 1px
+		pos.X += 1;		
+		
+		//draw the required characters with 1px between them
 		int offset = 0;
 		for (int i = 0; i < strlen(buffer); i++) {
 			if ((offset + 8) > canvasSize.X) {
@@ -405,7 +421,7 @@ namespace tr {
 			}
 			
 			drawCharacter(canvas, canvasSize, buffer[i], { pos.X + offset, pos.Y });
-			offset += 8;
+			offset += 9;
 		}
 	}
 	

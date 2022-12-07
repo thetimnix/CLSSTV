@@ -158,7 +158,7 @@ int main(int argc, char* argv[])
 			return 0;
 	}
 
-	tr::drawString(rgbBuffer, jpgSize, { 0, 0 }, "TEST OWO");
+	tr::drawString(rgbBuffer, jpgSize, { 0, 0 }, "CLSSTV HAS TEXT");
 	
 	RGBPure* converted = new RGBPure[jpgSize.X * jpgSize.Y];
 	for (int i = 0; i < jpgSize.X * jpgSize.Y; i++) {
