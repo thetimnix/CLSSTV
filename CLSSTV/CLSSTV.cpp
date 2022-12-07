@@ -80,24 +80,6 @@ SSTV::rgb* readBitmap(const char* path, int& width, int& height) {
 	return image;
 }
 
-struct vec2 {
-	int X;
-	int Y;
-
-	bool operator == (const vec2& rhs)
-	{
-		if (X == rhs.X && Y == rhs.Y) {
-			return true;
-		}
-		return false;
-	}
-
-	bool operator != (const vec2& rhs)
-	{
-		return !(*this == rhs);
-	}
-};
-
 void sizeErr(vec2 size) {
 	printf_s("[ERR] Incorrectly sized image supplied. Required %i x %i.\n", size.X, size.Y);
 }
@@ -175,6 +157,14 @@ int main(int argc, char* argv[])
 			printf_s("[ERR] Could not read source file\n");
 			return 0;
 	}
+
+	tr::drawString(rgbBuffer, jpgSize, { 0, 0 }, "TEST OWO");
+	
+	RGBPure* converted = new RGBPure[jpgSize.X * jpgSize.Y];
+	for (int i = 0; i < jpgSize.X * jpgSize.Y; i++) {
+		converted[i] = { rgbBuffer[i].r, rgbBuffer[i].g, rgbBuffer[i].b };
+	}
+	jpge::compress_image_to_jpeg_file("test.jpg", jpgSize.X, jpgSize.Y, 3, (const unsigned char*)converted);
 	
 	if (!rgbBuffer) { 
 		printf_s("[ERR] Could not read source file\n");

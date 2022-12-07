@@ -6,6 +6,24 @@
 //used in the sum (1500 + X * CFMultiplier) to convert a byte to the approximate SSTV complient colour / luminocity frequency
 const double CFMultiplier = 3.1372549;
 
+struct vec2 {
+    int X;
+    int Y;
+
+    bool operator == (const vec2& rhs)
+    {
+        if (X == rhs.X && Y == rhs.Y) {
+            return true;
+        }
+        return false;
+    }
+
+    bool operator != (const vec2& rhs)
+    {
+        return !(*this == rhs);
+    }
+};
+
 namespace SSTV {
     int clampUC(int input);
 

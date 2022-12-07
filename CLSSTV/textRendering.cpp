@@ -1,10 +1,13 @@
 #include "textRendering.h"
+#include <cstdarg>
 
 namespace tr {
+
+	//run init before dereferencing this
 	SSTV::rgb* rgbFont = 0;
-	
+
 	//monochrome font data, compressed so each byte contains 8 pixels
-//font from https://github.com/epto/epto-fonts
+	//font from https://github.com/epto/epto-fonts
 	const char compressedFontData[] = {
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0xFC, 0x03, 0x00, 0x00, 0x00,
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0xFC, 0x03, 0x00,
@@ -314,33 +317,34 @@ namespace tr {
 		0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
 	};
 
+	//this feels wrong
 	mapping charMap[]{
-		{'A', 1, 5},
-		{'B', 2, 5},
-		{'C', 3, 5},
-		{'D', 4, 5},
-		{'E', 5, 5},
-		{'F', 6, 5},
-		{'G', 7, 5},
-		{'H', 8, 5},
-		{'I', 9, 5},
-		{'J', 10, 5},
-		{'K', 11, 5},
-		{'L', 12, 5},
-		{'M', 7, 5},
-		{'N', 8, 5},
-		{'O', 9, 5},
-		{'P', 0, 6},
-		{'Q', 1, 6},
-		{'R', 2, 6},
-		{'S', 3, 6},
-		{'T', 4, 6},
-		{'U', 5, 6},
-		{'V', 6, 6},
-		{'W', 7, 6},
-		{'X', 8, 6},
-		{'Y', 9, 6},
-		{'Z', 10, 6},
+		{'A', 1, 4},
+		{'B', 2, 4},
+		{'C', 3, 4},
+		{'D', 4, 4},
+		{'E', 5, 4},
+		{'F', 6, 4},
+		{'G', 7, 4},
+		{'H', 8, 4},
+		{'I', 9, 4},
+		{'J', 10, 4},
+		{'K', 11, 4},
+		{'L', 12, 4},
+		{'M', 13, 4},
+		{'N', 14, 4},
+		{'O', 15, 4},
+		{'P', 0, 5},
+		{'Q', 1, 5},
+		{'R', 2, 5},
+		{'S', 3, 5},
+		{'T', 4, 5},
+		{'U', 5, 5},
+		{'V', 6, 5},
+		{'W', 7, 5},
+		{'X', 8, 5},
+		{'Y', 9, 5},
+		{'Z', 10, 5},
 
 		{'a', 1, 7},
 		{'b', 2, 7},
@@ -354,9 +358,9 @@ namespace tr {
 		{'j', 10, 7},
 		{'k', 11, 7},
 		{'l', 12, 7},
-		{'m', 7, 7},
-		{'n', 8, 7},
-		{'o', 9, 7},
+		{'m', 13, 7},
+		{'n', 14, 7},
+		{'o', 15, 7},
 		{'p', 0, 8},
 		{'q', 1, 8},
 		{'r', 2, 8},
@@ -369,6 +373,41 @@ namespace tr {
 		{'y', 9, 8},
 		{'z', 10, 8},
 	};
+
+	void drawCharacter(SSTV::rgb* canvas, vec2 canvasSize, char c, vec2 pos) {
+		for (mapping& map : charMap) {
+			if (map.c == c) {
+				vec2 mapPosExpanded = { (map.mapX * 8) + ((map.mapX * 8) / 8), (map.mapY * 16) + ((map.mapY * 16) / 16) };
+
+				printf_s("%c\n", c);
+				printf_s("pos: %i %i\n", mapPosExpanded.X, mapPosExpanded.Y);
+				
+				for (int y = 0; y < 16; y++) {
+					for (int x = 0; x < 8; x++) {
+						canvas[((pos.Y + y) * canvasSize.X) + (pos.X + x)] = rgbFont[((mapPosExpanded.Y + y) * 144) + (mapPosExpanded.X + x)];
+					}
+				}
+			}
+		}
+	}
+
+	//text overrunning the edge of the provided canvas will be truncated
+	void drawString(SSTV::rgb* canvas, vec2 canvasSize, vec2 pos, const char* fmt...) {
+		va_list lst;
+		va_start(lst, fmt);
+		char buffer[128];
+		vsnprintf(buffer, 128, fmt, lst);
+
+		int offset = 0;
+		for (int i = 0; i < strlen(buffer); i++) {
+			if ((offset + 8) > canvasSize.X) {
+				return;
+			}
+			
+			drawCharacter(canvas, canvasSize, buffer[i], { pos.X + offset, pos.Y });
+			offset += 8;
+		}
+	}
 	
 	SSTV::rgb* decompressFontData(char* compressed, int size) {
 		SSTV::rgb* decompressed = new SSTV::rgb[size * 8];
