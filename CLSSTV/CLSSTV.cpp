@@ -4,6 +4,7 @@
 #include "jpgd.h"
 #include "jpge.h"
 #include "textRendering.h"
+#include "modes.h"
 
 #include "BWX.h" //BW8, BW12
 #include "SCX.h" //Scottie1, Scottie2, ScottieDX
@@ -100,7 +101,6 @@ SSTV::rgb* resizeNN(SSTV::rgb* input, vec2 inputSize, vec2 newSize) {
 
 	for (int y = 0; y < newSize.Y; y++) {
 		for (int x = 0; x < newSize.X; x++) {
-			
 			//get the nearest pixel in the input image using the x and y scale values
 			int writeIndex = y * newSize.X + x;
 			int readIndex = (int)(y / yScale) * inputSize.X + (int)(x / xScale);
@@ -115,42 +115,6 @@ SSTV::rgb* resizeNN(SSTV::rgb* input, vec2 inputSize, vec2 newSize) {
 	return output;
 }
 
-enum encModeID {
-	EM_BW8,
-	EM_BW12,
-	EM_R36,
-	EM_R72,
-	EM_SC1,
-	EM_SC2,
-	EM_SCDX,
-	EM_MR1,
-	EM_MR2,
-	EM_PD50,
-	EM_PD90,
-	EM_PD120
-};
-
-struct encMode {
-	encModeID ID;
-	char code[8];
-	char desc[128];
-	vec2 size;
-};
-
-encMode BW8 =   { EM_BW8,   "BW8",   "Black/White 8s",  {160, 120} };
-encMode BW12 =  { EM_BW12,  "BW12",  "Black/White 12s", {160, 120} };
-encMode R36 =   { EM_R36,   "R36",   "Robot36",         {320, 240} };
-encMode R72 =   { EM_R72,   "R72",   "Robot72",         {320, 240} };
-encMode SC1 =   { EM_SC1,   "SC1",   "Scottie1",        {320, 256} };
-encMode SC2 =   { EM_SC2,   "SC2",   "Scottie2",        {320, 256} };
-encMode SCDX =  { EM_SCDX,  "SCDX",  "ScottieDX",       {320, 256} };
-encMode MR1 =   { EM_MR1,   "MR1",   "Martin1",         {320, 256} };
-encMode MR2 =   { EM_MR2,   "MR2",   "Martin2",         {320, 256} };
-encMode PD50 =  { EM_PD50,  "PD50",  "PD50",            {320, 256} };
-encMode PD90 =  { EM_PD90,  "PD90",  "PD90",            {320, 256} };
-encMode PD120 = { EM_PD120, "PD120", "PD120",           {640, 496} };
-
-encMode modes[] = { BW8, BW12, R36, R72, SC1, SC2, SCDX, MR1, MR2, PD50, PD90, PD120 };
 
 int main(int argc, char* argv[])
 {	
@@ -228,10 +192,9 @@ int main(int argc, char* argv[])
 			//get enc mode
 			selectedEncMode = &em;
 			//resize image if required
-			//resizedRGB = resizeNN(rgbBuffer, jpgSize, em.size);
-			resizedRGB = generateTestPattern(em.size);
+			resizedRGB = resizeNN(rgbBuffer, jpgSize, em.size);
 			//draw required text ontop of resizedRGB
-			tr::drawString(resizedRGB, em.size, { 0, 0 }, "CLSSTV!");
+			tr::drawString(resizedRGB, em.size, { 0, 0 }, "<3");
 			//exit loop
 			validEncMode = true;
 			break;

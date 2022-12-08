@@ -1,6 +1,7 @@
 #pragma once
 #include "SSTV.h"
 #include "wav.h"
+#include "modes.h"
 
 /*
     These are kind of a mess as BW8 and BW12 are not very well documented.
@@ -9,14 +10,14 @@
 */
 
 void encodeBW(SSTV::rgb* rgbBuffer, double lineMS) {
-    int jpg_width = 160;
-    int jpg_height = 120;
+    int img_width = BW8.size.X;
+    int img_height = BW8.size.Y;
 
-    float mspp = lineMS / static_cast<float>(jpg_width);
-    for (int y = 0; y < jpg_height; y++) {
+    float mspp = lineMS / static_cast<float>(img_width);
+    for (int y = 0; y < img_height; y++) {
         wav::addTone(1200, 7); //Sync pulse, no one is clear on how long this should be
-        for (int x = 0; x < jpg_width; x++) {
-            SSTV::rgb c = rgbBuffer[(y * jpg_width) + x];
+        for (int x = 0; x < img_width; x++) {
+            SSTV::rgb c = rgbBuffer[(y * img_width) + x];
             wav::addTone(1500 + (CFMultiplier * ((c.r + c.g + c.b) / 3)), mspp); //image data, average of RGB
         }
     }

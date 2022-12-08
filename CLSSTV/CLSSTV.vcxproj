@@ -142,6 +142,7 @@
     <ClCompile Include="CLSSTV.cpp" />
     <ClCompile Include="jpgd.cpp" />
     <ClCompile Include="jpge.cpp" />
+    <ClCompile Include="modes.cpp" />
     <ClCompile Include="SSTV.cpp" />
     <ClCompile Include="textRendering.cpp" />
     <ClCompile Include="wav.cpp" />
@@ -151,6 +152,7 @@
     <ClInclude Include="jpgd.h" />
     <ClInclude Include="jpgd_idct.h" />
     <ClInclude Include="jpge.h" />
+    <ClInclude Include="modes.h" />
     <ClInclude Include="MRX.h" />
     <ClInclude Include="PDX.h" />
     <ClInclude Include="R36.h" />

@@ -1,31 +1,32 @@
 #pragma once
 #include "SSTV.h"
 #include "wav.h"
+#include "modes.h"
 
 void encodeSC(SSTV::rgb* rgbBuffer, double lineMS) {
-    int jpg_width = 320;
-    int jpg_height = 256;
+    int img_width = SC1.size.X;
+    int img_height = SC1.size.Y;
 
-    float mspp = lineMS / (float)jpg_width;
+    float mspp = lineMS / (float)img_width;
 
     wav::addTone(1200, 9);
-    for (int y = 0; y < jpg_height; y++) {
+    for (int y = 0; y < img_height; y++) {
         wav::addTone(1500, 1.5);
-        for (int x = 0; x < jpg_width; x++) {
-            SSTV::rgb c = rgbBuffer[(y * jpg_width) + x];
+        for (int x = 0; x < img_width; x++) {
+            SSTV::rgb c = rgbBuffer[(y * img_width) + x];
             wav::addTone(1500 + (CFMultiplier * c.g), mspp);
         }
 
         wav::addTone(1500, 1.5);
-        for (int x = 0; x < jpg_width; x++) {
-            SSTV::rgb c = rgbBuffer[(y * jpg_width) + x];
+        for (int x = 0; x < img_width; x++) {
+            SSTV::rgb c = rgbBuffer[(y * img_width) + x];
             wav::addTone(1500 + (CFMultiplier * c.b), mspp);
         }
 
         wav::addTone(1200, 9);
         wav::addTone(1500, 1.5);
-        for (int x = 0; x < jpg_width; x++) {
-            SSTV::rgb c = rgbBuffer[(y * jpg_width) + x];
+        for (int x = 0; x < img_width; x++) {
+            SSTV::rgb c = rgbBuffer[(y * img_width) + x];
             wav::addTone(1500 + (CFMultiplier * c.r), mspp);
         }
     }

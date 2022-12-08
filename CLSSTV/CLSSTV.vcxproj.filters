@@ -18,20 +18,23 @@
     <ClCompile Include="CLSSTV.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="jpge.cpp">
-      <Filter>Resource Files</Filter>
-    </ClCompile>
-    <ClCompile Include="jpgd.cpp">
-      <Filter>Resource Files</Filter>
-    </ClCompile>
     <ClCompile Include="wav.cpp">
-      <Filter>Resource Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SSTV.cpp">
-      <Filter>Resource Files</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="textRendering.cpp">
-      <Filter>Resource Files</Filter>
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SSTV.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="jpge.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="jpgd.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="modes.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -46,9 +49,6 @@
     </ClInclude>
     <ClInclude Include="wav.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SSTV.h">
-      <Filter>Resource Files</Filter>
     </ClInclude>
     <ClInclude Include="BWX.h">
       <Filter>Header Files</Filter>
@@ -69,6 +69,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="textRendering.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SSTV.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="modes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
