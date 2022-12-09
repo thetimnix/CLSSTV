@@ -29,7 +29,7 @@ namespace wav {
         return 1;
     }
 
-    void addTone(short frequency, float duration) {
+    void addTone(short frequency, float duration, generatorType gt) {
         //number of samples required for the requested duration. sometimes.
         int sampleCount = round((header.sampleRate) * (duration / 1000.f));
 
@@ -57,7 +57,17 @@ namespace wav {
 
             //calculates the actual sine wave
             //these two lines took the longest in this entire project. fuck maths.
-            wavData[writeIndex] = { (short)(ampl * sin(angle)) };
+            switch (gt) {
+            case GT_SINE:
+                wavData[writeIndex].S = (short)(ampl * sin(angle));
+                break;
+            case GT_SQUARE:
+                wavData[writeIndex].S = (short)(ampl * (sin(angle) > 0 ? 1 : -1));
+                break;
+            case GT_TRIANGLE:
+                wavData[writeIndex].S = (short)(ampl * (2 / pi) * asin(sin(angle)));
+                break;
+            }
             angle += ((2 * pi * frequency) / header.sampleRate);
             writeIndex++;
 

@@ -194,7 +194,7 @@ int main(int argc, char* argv[])
 			//resize image if required
 			resizedRGB = resizeNN(rgbBuffer, jpgSize, em.size);
 			//draw required text ontop of resizedRGB
-			tr::drawString(resizedRGB, em.size, { 0, 0 }, "<3");
+			tr::drawString(resizedRGB, em.size, { 0, 0 }, "CLSSTV :3");
 			//exit loop
 			validEncMode = true;
 			break;
@@ -206,6 +206,9 @@ int main(int argc, char* argv[])
 		return 0;
 	}
 	
+	//add VOX tone
+	SSTV::addVoxTone();
+
 	//call actual encode function
 	switch (selectedEncMode->ID) {
 		case(EM_BW8):

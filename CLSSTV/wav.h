@@ -1,6 +1,13 @@
 #pragma once
 
 namespace wav {
+
+    enum generatorType {
+        GT_SINE = 0,
+        GT_SQUARE = 1,
+        GT_TRIANGLE = 2
+    };
+    
     struct wavHeader {
         char riff[4] = { 'R', 'I', 'F', 'F' };
         int fileSize = 44;
@@ -22,7 +29,7 @@ namespace wav {
     };
 
     int init();
-    void addTone(short frequency, float duration);
+    void addTone(short frequency, float duration, generatorType gt = generatorType::GT_SINE);
     int save(FILE* fptr);
 
     extern wavHeader header;
