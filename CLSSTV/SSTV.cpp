@@ -1,6 +1,5 @@
 #include "SSTV.h"
 #include "wav.h"
-#include "jpgd.h"
 
 namespace SSTV {
 	int clampUC(int input) {

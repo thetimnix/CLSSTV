@@ -4,8 +4,6 @@
 
 #include "SSTV.h"
 #include "wav.h"
-#include "jpgd.h"
-#include "jpge.h"
 #include "textRendering.h"
 #include "modes.h"
 
