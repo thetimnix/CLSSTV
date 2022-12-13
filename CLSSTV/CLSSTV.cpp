@@ -58,41 +58,105 @@ SSTV::rgb* resizeNN(SSTV::rgb* input, vec2 inputSize, vec2 newSize) {
 	return output;
 }
 
+void printHelp() {
+	printf_s("[CLSSTV USAGE]\n");
+	printf_s("CLSSTV.exe -M [MODE] -I [INPUT.XXX] -O [OUTPUT.WAV]\n");
+	printf_s("\nRequired:\n");
+	printf_s(" -M: Encode mode\n");
+	printf_s(" -I: Input path  (JPG / PNG / BMP / GIF)\n");
+	printf_s(" -O: Output path (WAV)\n");
+	printf_s("\nOptional / util:\n");
+	printf_s(" -P: Play generated audio, use with or instead of -O\n");
+	printf_s(" -L: List encode modes\n");
+	printf_s(" -H: Show this help text\n");
+}
+
+void printEncCodes() {
+	printf_s("[CLSSTV MODES]");
+	printf_s(" %-8s | %-16s | %-9s\n", "CODE", "DESCRIPTION", "IMG SIZE");
+	printf_s(" %-8s | %-16s | %-9s\n", "", "", "");
+	for (encMode& line : modes) {
+		printf_s(" %-8s | %-16s | %i x %i\n", line.code, line.desc, line.size.X, line.size.Y);
+	}
+}
+
 int main(int argc, char* argv[])
 {	
+	//print help texts if required
+	if (strcmp(argv[1], "-L") == 0) {
+		printEncCodes();
+		return 0;
+	}
+	
+	if (strcmp(argv[1], "-H") == 0) {
+		printHelp();
+		return 0;
+	}
+	
 	//output file pointer
 	FILE* ofptr;
 
 	//init drawing system
 	tr::initFont();
+
+	//process other arguments
+	encMode* selectedEncMode = 0;
+	bool validEncMode = false;
 	
-	//print mode list if requested
-	if (strcmp(argv[1], "-M") == 0) {
-		printf_s(" %-8s | %-16s | %-9s\n", "CODE", "DESCRIPTION", "IMG SIZE");
-		printf_s(" %-8s | %-16s | %-9s\n", "", "", "");
-		for (encMode& line : modes) {
-			printf_s(" %-8s | %-16s | %i x %i\n", line.code, line.desc, line.size.X, line.size.Y);
+	char* inputPath = 0;
+	char* outputPath = 0;
+	bool playback = false;
+	
+	for (int i = 0; i < argc; i++) {
+		//find input argument
+		if (strcmp(argv[i], "-I") == 0 && i + 1 <= argc) {
+			inputPath = argv[i + 1];
 		}
+		
+		//find output argument
+		if (strcmp(argv[i], "-O") == 0 && i + 1 <= argc) {
+			outputPath = argv[i + 1];
+		}
+
+		//find encode mode
+		if (strcmp(argv[i], "-M") == 0 && i + 1 <= argc && !validEncMode) {
+			for (encMode& em : modes) {
+				if (strcmp(argv[i + 1], em.code) == 0) {
+					selectedEncMode = &em;
+					validEncMode = true;
+				}
+			}
+		}
+		
+		//find -P switch
+		if (strcmp(argv[i], "-P") == 0) {
+			playback = true;
+		}
+	}
+
+	//validation stuff
+	if (!inputPath || !(playback || outputPath) || !validEncMode) {
+		printf_s("%i, %i, %i, %i\n", (bool)inputPath, playback, (bool)outputPath, validEncMode);
+		printHelp();
 		return 0;
 	}
 
-	//print usage if args are missing
-	if (argc != 4) {
-		printf_s("USAGE:\n Arg 1: Encode type (see -M)\n Arg 2: Input (JPG)\n Arg 3: Output (WAV)");
+	if (playback) {
+		printf_s("[ERR] -P is not implemented. Quitting.\n");
 		return 0;
 	}
-
+	
 	//begin encode
 	printf_s("[CLSSTV R1.4 2022]\n");
 	printf_s("[Beginning SSTV generation @ %iKHz]\n", wav::header.sampleRate);
 
 	//read input jpg
-	vec2 jpgSize = { 0, 0 };
-	int jpgChannels = 4;
+	vec2 imgSize = { 0, 0 };
+	int imgChannels = 4;
 	SSTV::rgb* rgbBuffer = nullptr;
 
 	//stbi will load most image types, dont need to determin which load function to use anymore
-	rgbBuffer = (SSTV::rgb*)stbi_load(argv[2], &jpgSize.X, &jpgSize.Y, &jpgChannels, 3);
+	rgbBuffer = (SSTV::rgb*)stbi_load(inputPath, &imgSize.X, &imgSize.Y, &imgChannels, 3);
 	
 	if (!rgbBuffer) { 
 		printf_s("[ERR] Could not read source file\n");
@@ -106,7 +170,7 @@ int main(int argc, char* argv[])
 	}
 	
 	//open output file
-	int openErrNo = fopen_s(&ofptr, argv[3], "wb");
+	int openErrNo = fopen_s(&ofptr, outputPath, "wb");
 	if (openErrNo != 0) {
 		char errBuffer[256] = {};
 		strerror_s(errBuffer, openErrNo);
@@ -114,28 +178,12 @@ int main(int argc, char* argv[])
 		return 0;
 	}
 
-	//find and set user selected encoding mode
-	encMode* selectedEncMode = 0;
+	//resize if required
 	SSTV::rgb* resizedRGB = 0;
-	bool validEncMode = false;
-	for (encMode& em : modes) {
-		if (strcmp(argv[1], em.code) == 0) {
-			//get enc mode
-			selectedEncMode = &em;
-			//resize image if required
-			resizedRGB = resizeNN(rgbBuffer, jpgSize, em.size);
-			//draw required text ontop of resizedRGB
-			tr::drawString(resizedRGB, em.size, { 0, 0 }, "CLSSTV");
-			//exit loop
-			validEncMode = true;
-			break;
-		}
-	}
-	
-	if(!validEncMode) {
-		printf_s("[ERR] SSTV encode type not recognised, see -M\n");
-		return 0;
-	}
+	resizedRGB = resizeNN(rgbBuffer, imgSize, selectedEncMode->size);
+
+	//draw overlay
+	tr::drawString(resizedRGB, selectedEncMode->size, { 0, 0 }, "CLSSTV");
 	
 	//add VOX tone
 	SSTV::addVoxTone();
@@ -203,7 +251,7 @@ int main(int argc, char* argv[])
 		return 0;
 	}
 	
-	printf_s("[Encode complete, wrote %i bytes to %s]\n", wav::header.fileSize, getFilenameFromPath(argv[3]));
+	printf_s("[Encode complete, wrote %i bytes to %s]\n", wav::header.fileSize, getFilenameFromPath(outputPath));
 	printf_s(" Expected time: %f MS\n", wav::expectedDurationMS);
 	printf_s(" Actual time:   %f MS\n", wav::actualDurationMS);
 	printf_s(" Added: %i Skipped: %i\n", wav::balance_AddedSamples, wav::balance_SkippedSamples);
