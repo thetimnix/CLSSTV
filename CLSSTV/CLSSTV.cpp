@@ -147,7 +147,7 @@ int main(int argc, char* argv[])
 	}
 	
 	//begin encode
-	printf_s("[CLSSTV R1.4 2022]\n");
+	printf_s("[CLSSTV R1.5 2022]\n");
 	printf_s("[Beginning SSTV generation @ %iKHz]\n", wav::header.sampleRate);
 
 	//read input jpg
