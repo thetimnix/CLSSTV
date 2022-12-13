@@ -58,15 +58,15 @@ namespace wav {
             //calculates the actual sine wave
             //these two lines took the longest in this entire project. fuck maths.
             switch (gt) {
-            case GT_SINE:
-                wavData[writeIndex].S = (short)(ampl * sin(angle));
-                break;
-            case GT_SQUARE:
-                wavData[writeIndex].S = (short)(ampl * (sin(angle) > 0 ? 1 : -1));
-                break;
-            case GT_TRIANGLE:
-                wavData[writeIndex].S = (short)(ampl * (2 / pi) * asin(sin(angle)));
-                break;
+                case GT_SINE:
+                    wavData[writeIndex].S = (short)(ampl * sin(angle));
+                    break;
+                case GT_SQUARE:
+                    wavData[writeIndex].S = (short)(ampl * (sin(angle) > 0 ? 1 : -1));
+                    break;
+                case GT_TRIANGLE:
+                    wavData[writeIndex].S = (short)(ampl * (2 / pi) * asin(sin(angle)));
+                    break;
             }
             angle += ((2 * pi * frequency) / header.sampleRate);
             writeIndex++;

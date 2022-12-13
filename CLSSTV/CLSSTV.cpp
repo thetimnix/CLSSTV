@@ -1,4 +1,7 @@
 #include <iostream>
+#include <Windows.h>
+#include <commdlg.h>
+
 #include "SSTV.h"
 #include "wav.h"
 #include "jpgd.h"
@@ -13,6 +16,9 @@
 #include "PDX.h" //PD50, PD90, PD120
 #include "MRX.h" //Martin1, Martin2 
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 const char* getFilenameFromPath(const char* path) {
 	const char* filename = path;
 	for (int x = strlen(path); x > 0; x--) {
@@ -21,67 +27,6 @@ const char* getFilenameFromPath(const char* path) {
 		}
 	}
 	return filename;
-}
-
-enum fileType {
-	FT_ERR,
-	FT_BMP,
-	FT_JPG
-};
-
-fileType readFileType(const char* path) {
-	//open file
-	FILE* file;
-	fopen_s(&file, path, "rb");
-	if (!file) { return fileType::FT_ERR; }
-
-	//alloc space and read the files header
-	unsigned char header[2];
-	fread(header, 1, 2, file);
-	fclose(file);
-
-	//compare file header and return
-	if (header[0] == 'B' && header[1] == 'M') { return fileType::FT_BMP; }
-	if (header[0] == 0xFF && header[1] == 0xD8) { return fileType::FT_JPG; }
-
-	return fileType::FT_ERR;
-}
-
-SSTV::rgb* readBitmap(const char* path, int& width, int& height) {
-	FILE* file;
-	fopen_s(&file, path, "rb");
-	if (!file) { return nullptr; }
-
-	//read the header
-	unsigned char header[54];
-	fread(header, 1, 54, file);
-
-	//get the width and height
-	width = *(int*)&header[18];
-	height = *(int*)&header[22];
-
-	//get the bitdepth
-	int bitDepth = *(int*)&header[28];
-
-	//get the padding
-	int padding = (4 - (width * (bitDepth / 8)) % 4) % 4;
-
-	//allocate memory for the image
-	SSTV::rgb* image = (SSTV::rgb*)malloc((width * height) * sizeof(SSTV::rgb));
-	if (!image) { return nullptr; }
-
-	//read the image
-	for (int y = 0; y < height; y++) {
-		for (int x = 0; x < width; x++) {
-			unsigned char pixel[3];
-			fread(pixel, 1, 3, file);
-			image[(height - y - 1) * width + x] = SSTV::rgb(pixel[2], pixel[1], pixel[0]);
-		}
-		fseek(file, padding, SEEK_CUR);
-	}
-
-	fclose(file);
-	return image;
 }
 
 SSTV::rgb* resizeNN(SSTV::rgb* input, vec2 inputSize, vec2 newSize) {
@@ -115,7 +60,6 @@ SSTV::rgb* resizeNN(SSTV::rgb* input, vec2 inputSize, vec2 newSize) {
 	return output;
 }
 
-
 int main(int argc, char* argv[])
 {	
 	//output file pointer
@@ -146,22 +90,11 @@ int main(int argc, char* argv[])
 
 	//read input jpg
 	vec2 jpgSize = { 0, 0 };
-	int idk = 4;
+	int jpgChannels = 4;
 	SSTV::rgb* rgbBuffer = nullptr;
 
-	switch (readFileType(argv[2])) {
-		case FT_JPG:
-			rgbBuffer = (SSTV::rgb*)jpgd::decompress_jpeg_image_from_file(argv[2], &jpgSize.X, &jpgSize.Y, &idk, 4);
-			break;
-			
-		case FT_BMP:
-			rgbBuffer = readBitmap(argv[2], jpgSize.X, jpgSize.Y);
-			break;
-
-		case FT_ERR:
-			printf_s("[ERR] Could not read source file\n");
-			return 0;
-	}
+	//stbi will load most image types, dont need to determin which load function to use anymore
+	rgbBuffer = (SSTV::rgb*)stbi_load(argv[2], &jpgSize.X, &jpgSize.Y, &jpgChannels, 3);
 	
 	if (!rgbBuffer) { 
 		printf_s("[ERR] Could not read source file\n");
@@ -194,7 +127,7 @@ int main(int argc, char* argv[])
 			//resize image if required
 			resizedRGB = resizeNN(rgbBuffer, jpgSize, em.size);
 			//draw required text ontop of resizedRGB
-			tr::drawString(resizedRGB, em.size, { 0, 0 }, "CLSSTV :3");
+			tr::drawString(resizedRGB, em.size, { 0, 0 }, "CLSSTV");
 			//exit loop
 			validEncMode = true;
 			break;

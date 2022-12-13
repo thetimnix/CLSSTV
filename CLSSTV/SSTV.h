@@ -31,20 +31,17 @@ namespace SSTV {
         unsigned char r;
         unsigned char g;
         unsigned char b;
-        unsigned char a;
-
+        
         rgb(unsigned char R, unsigned char G, unsigned char B) {
             r = R;
             g = G;
             b = B;
-            a = 0x00;
         }
 
         rgb() {
             r = 0;
             g = 0;
             b = 0;
-            a = 0;
         }
     };
 

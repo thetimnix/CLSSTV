@@ -155,6 +155,14 @@ namespace tr {
 		}
 	}
 
+	void drawSpacer(SSTV::rgb* canvas, vec2 canvasSize, int width, vec2 pos) {
+		for (int y = 0; y < 16; y++) {
+			for (int x = 0; x < width; x++) {
+				canvas[((pos.Y + y) * canvasSize.X) + (pos.X + x)] = { 0, 0, 0 };
+			}
+		}
+	}
+	
 	//text overrunning the edge of the provided canvas will be truncated
 	void drawString(SSTV::rgb* canvas, vec2 canvasSize, vec2 pos, const char* fmt...) {
 		
@@ -165,28 +173,27 @@ namespace tr {
 		vsnprintf(buffer, 64, fmt, lst);
 
 		//draw the background rectangle
-		int backgroundRectX = strlen(buffer) * 9 + 1;
-		int backgroundRectY = 16;
 		
-		for (int x = 0; x < backgroundRectX; x++) {
-			for (int y = 0; y < backgroundRectY; y++){
-				canvas[((pos.Y + y) * canvasSize.X) + (pos.X + x)] = { 0, 0, 0 }; 
-			}
-		}
+		int offset = 0;
+		int spacerWidth = 2;
 		
-		//shift forward 1px
-		pos.X += 1;		
+		drawSpacer(canvas, canvasSize, spacerWidth, { pos.X, pos.Y });
+		offset += spacerWidth;
 		
 		//draw the required characters with 1px between them
-		int offset = 0;
 		for (int i = 0; i < strlen(buffer); i++) {
-			if ((offset + 9) > canvasSize.X) {
+			if ((offset + 8) > canvasSize.X) {
 				return;
 			}
 			
 			drawCharacter(canvas, canvasSize, buffer[i], { pos.X + offset, pos.Y });
-			offset += 9;
+			offset += 8;
+			drawSpacer(canvas, canvasSize, spacerWidth, { pos.X + offset, pos.Y });
+			offset += spacerWidth;
 		}
+
+		drawSpacer(canvas, canvasSize, spacerWidth, { pos.X + offset, pos.Y });
+		offset += spacerWidth;
 	}
 	
 	SSTV::rgb* decompressFontData(char* compressed, int size) {
