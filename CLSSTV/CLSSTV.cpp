@@ -17,7 +17,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-#define VERSION "1.5"
+#define VERSION "1.6"
 
 const char* getFilenameFromPath(const char* path) {
 	const char* filename = path;

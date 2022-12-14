@@ -98,22 +98,22 @@ namespace wav {
 		UINT count;
         HRESULT hr = CoInitializeEx(nullptr, COINIT_SPEED_OVER_MEMORY);
         if (FAILED(hr)) {
-            printf_s("Failed to CoInitialize!\n");
+            printf_s("[ERR] Failed to CoInitialize!\n");
             return;
         }
 		hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL, CLSCTX_ALL, __uuidof(IMMDeviceEnumerator), (void**)&pEnumerator);
 		if (FAILED(hr)) {
-			printf_s("Failed to create device enumerator!\n");
+			printf_s("[ERR] Failed to create device enumerator!\n");
 			return;
 		}
 		hr = pEnumerator->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &pCollection);
 		if (FAILED(hr)) {
-			printf_s("Failed to enumerate audio endpoints!\n");
+			printf_s("[ERR] Failed to enumerate audio endpoints!\n");
 			return;
 		}
 		hr = pCollection->GetCount(&count);
 		if (FAILED(hr)) {
-			printf_s("Failed to get device count!\n");
+			printf_s("[ERR] Failed to get device count!\n");
 			return;
 		}
 
@@ -125,20 +125,23 @@ namespace wav {
 			PropVariantInit(&varName);
 			hr = pCollection->Item(i, &pDevice);
 			if (FAILED(hr)) {
-				printf_s("Failed to get device %d!\n", i);
+				printf_s("[ERR] Failed to get device %d!\n", i);
 				return;
 			}
 			hr = pDevice->OpenPropertyStore(STGM_READ, &pProps);
 			if (FAILED(hr)) {
-				printf_s("Failed to open property store for device %d!\n", i);
+				printf_s("[ERR] Failed to open property store for device %d!\n", i);
 				return;
 			}
 			hr = pProps->GetValue(PKEY_Device_FriendlyName, &varName);
 			if (FAILED(hr)) {
-				printf_s("Failed to get friendly name for device %d!\n", i);
+				printf_s("[ERR] Failed to get friendly name for device %d!\n", i);
 				return;
 			}
-			printf_s("Device %d: %S\n", i, varName.pwszVal);
+            
+            //list devices
+			printf_s(" Device %d: %S\n", i, varName.pwszVal);
+            
 			PropVariantClear(&varName);
 			pProps->Release();
 			pDevice->Release();
@@ -153,22 +156,22 @@ namespace wav {
         UINT count;
         HRESULT hr = CoInitializeEx(nullptr, COINIT_SPEED_OVER_MEMORY);
         if (FAILED(hr)) {
-            printf_s("Failed to CoInitialize!\n");
+            printf_s("[ERR] Failed to CoInitialize!\n");
             return 0;
         }
         hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL, CLSCTX_ALL, __uuidof(IMMDeviceEnumerator), (void**)&pEnumerator);
         if (FAILED(hr)) {
-            printf_s("Failed to create device enumerator!\n");
+            printf_s("[ERR] Failed to create device enumerator!\n");
             return 0;
         }
         hr = pEnumerator->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &pCollection);
         if (FAILED(hr)) {
-            printf_s("Failed to enumerate audio endpoints!\n");
+            printf_s("[ERR] Failed to enumerate audio endpoints!\n");
             return 0;
         }
         hr = pCollection->GetCount(&count);
         if (FAILED(hr)) {
-            printf_s("Failed to get device count!\n");
+            printf_s("[ERR] Failed to get device count!\n");
             return 0;
         }
 
@@ -191,7 +194,7 @@ namespace wav {
         }
         hr = pDevice->GetId((LPWSTR*)&deviceID);
         if (FAILED(hr)) {
-            printf_s("Failed to get ID of device!\n");
+            printf_s("[ERR] Failed to get ID of device!\n");
             return 0;
         }
 
@@ -207,7 +210,7 @@ namespace wav {
     void beginPlayback(int iDeviceID) {
         HRESULT hr = CoInitializeEx(nullptr, COINIT_SPEED_OVER_MEMORY);
         if (FAILED(hr)) {
-            printf_s("Failed to CoInitialize!\n");
+            printf_s("[ERR] Failed to CoInitialize!\n");
             return;
         }
         
@@ -268,7 +271,7 @@ namespace wav {
 
 				int percentage = (int)((float)wavPlaybackSample / (float)writeIndex * 100.f);
 				if (percentage > lastPrintedPercentage) {
-					printf_s("Playback: %i%%\r", percentage);
+					printf_s(" Playback: %i%%\r", percentage);
 					lastPrintedPercentage = percentage;
 				}
 
