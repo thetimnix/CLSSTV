@@ -2,6 +2,12 @@
 CLSSTV is a commandline SSTV signal generator written in C++  
 no dependencies required (Except WASAPI)
 
+features:
+-direct playback of generated signal  
+-saving signal to WAV  
+-reading of all standard image formats (PNG, JPG, BMP, GIF, ETC)  
+-automatic resizing of supplied image  
+
 supported SSTV methods:  
 BW8  
 BW16  
