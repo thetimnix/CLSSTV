@@ -7,6 +7,7 @@ features:
 -saving signal to WAV  
 -reading of all standard image formats (PNG, JPG, BMP, GIF, ETC)  
 -automatic resizing of supplied image  
+-text overlaying  
 
 supported SSTV methods:  
 BW8  
