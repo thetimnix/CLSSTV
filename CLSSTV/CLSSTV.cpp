@@ -140,11 +140,6 @@ int main(int argc, char* argv[])
 		printHelp();
 		return 0;
 	}
-
-	if (playback) {
-		printf_s("[ERR] -P is not implemented. Quitting.\n");
-		return 0;
-	}
 	
 	//begin encode
 	printf_s("[CLSSTV R1.5 2022]\n");
@@ -255,4 +250,9 @@ int main(int argc, char* argv[])
 	printf_s(" Expected time: %f MS\n", wav::expectedDurationMS);
 	printf_s(" Actual time:   %f MS\n", wav::actualDurationMS);
 	printf_s(" Added: %i Skipped: %i\n", wav::balance_AddedSamples, wav::balance_SkippedSamples);
+
+	if (playback) {
+		printf_s("[PLAYING...]\n");
+		wav::beginPlayback();
+	}
 }

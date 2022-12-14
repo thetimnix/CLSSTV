@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "wav.h"
+#include <windows.h>
+#pragma comment(lib, "Winmm.lib")
 
 namespace wav {
     int ampl = 30000;
@@ -88,6 +90,10 @@ namespace wav {
         }
     }
 
+    void beginPlayback() {
+        PlaySoundW((LPCWSTR)wavheap, NULL, SND_MEMORY);
+    }
+    
     int save(FILE* fptr) {
         header.dataSize -= header.dataSize - bytesWritten;
         header.fileSize = header.dataSize + sizeof(wavHeader);
