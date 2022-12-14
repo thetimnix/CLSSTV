@@ -31,7 +31,8 @@ namespace wav {
     int init();
     void addTone(short frequency, float duration, generatorType gt = generatorType::GT_SINE);
     int save(FILE* fptr);
-    void beginPlayback();
+    void beginPlayback(int iDeviceID);
+    void WASAPIListDevices();
     
     extern wavHeader header;
     extern double expectedDurationMS;

@@ -17,6 +17,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+#define VERSION "1.5"
+
 const char* getFilenameFromPath(const char* path) {
 	const char* filename = path;
 	for (int x = strlen(path); x > 0; x--) {
@@ -60,7 +62,7 @@ SSTV::rgb* resizeNN(SSTV::rgb* input, vec2 inputSize, vec2 newSize) {
 
 void printHelp() {
 	printf_s("[CLSSTV USAGE]\n");
-	printf_s("CLSSTV.exe -M [MODE] -I [INPUT.XXX] -O [OUTPUT.WAV]\n");
+	printf_s("CLSSTV.exe -M [MODE] -I [INPUT.XXX] -O [OUTPUT.WAV] (-P [DEVICE])\n");
 	printf_s("\nRequired:\n");
 	printf_s(" -M: Encode mode\n");
 	printf_s(" -I: Input path  (JPG / PNG / BMP / GIF)\n");
@@ -68,6 +70,7 @@ void printHelp() {
 	printf_s("\nOptional / util:\n");
 	printf_s(" -P: Play generated audio, use with or instead of -O\n");
 	printf_s(" -L: List encode modes\n");
+	printf_s(" -D: List playback devices\n");
 	printf_s(" -H: Show this help text\n");
 }
 
@@ -92,9 +95,14 @@ int main(int argc, char* argv[])
 		printHelp();
 		return 0;
 	}
+
+	if (strcmp(argv[1], "-D") == 0) {
+		wav::WASAPIListDevices();
+		return 0;
+	}
 	
 	//output file pointer
-	FILE* ofptr;
+	FILE* ofptr = 0;
 
 	//init drawing system
 	tr::initFont();
@@ -106,6 +114,7 @@ int main(int argc, char* argv[])
 	char* inputPath = 0;
 	char* outputPath = 0;
 	bool playback = false;
+	int playbackDevice = -1;
 	
 	for (int i = 0; i < argc; i++) {
 		//find input argument
@@ -128,8 +137,9 @@ int main(int argc, char* argv[])
 			}
 		}
 		
-		//find -P switch
-		if (strcmp(argv[i], "-P") == 0) {
+		//find -P switch and device
+		if (strcmp(argv[i], "-P") == 0 && i + 1 <= argc) {
+			playbackDevice = strtol(argv[i + 1], NULL, 10);
 			playback = true;
 		}
 	}
@@ -142,7 +152,7 @@ int main(int argc, char* argv[])
 	}
 	
 	//begin encode
-	printf_s("[CLSSTV R1.5 2022]\n");
+	printf_s("[CLSSTV R%s 2022]\n", VERSION);
 	printf_s("[Beginning SSTV generation @ %iKHz]\n", wav::header.sampleRate);
 
 	//read input jpg
@@ -165,12 +175,14 @@ int main(int argc, char* argv[])
 	}
 	
 	//open output file
-	int openErrNo = fopen_s(&ofptr, outputPath, "wb");
-	if (openErrNo != 0) {
-		char errBuffer[256] = {};
-		strerror_s(errBuffer, openErrNo);
-		printf_s("[ERR] Could not open output file (%s)\n", errBuffer);
-		return 0;
+	if (outputPath) {
+		int openErrNo = fopen_s(&ofptr, outputPath, "wb");
+		if (openErrNo != 0) {
+			char errBuffer[256] = {};
+			strerror_s(errBuffer, openErrNo);
+			printf_s("[ERR] Could not open output file (%s)\n", errBuffer);
+			return 0;
+		}
 	}
 
 	//resize if required
@@ -178,8 +190,8 @@ int main(int argc, char* argv[])
 	resizedRGB = resizeNN(rgbBuffer, imgSize, selectedEncMode->size);
 
 	//draw overlay
-	tr::drawString(resizedRGB, selectedEncMode->size, { 0, 0 }, "CLSSTV");
-	
+	tr::drawString(resizedRGB, selectedEncMode->size, { 0, 0 }, "CLSSTV %s", VERSION);
+
 	//add VOX tone
 	SSTV::addVoxTone();
 
@@ -238,21 +250,31 @@ int main(int argc, char* argv[])
 			return 0;
 	}
 	
-	//save and exit
-	if (wav::save(ofptr) <= 0) {
-		char errBuffer[256] = {};
-		strerror_s(errBuffer, errno);
-		printf_s("[ERR] Issue opening output file (%s)\n", errBuffer);
-		return 0;
-	}
+	//add 500ms footer
+	wav::addTone(0, 500.f);
 	
-	printf_s("[Encode complete, wrote %i bytes to %s]\n", wav::header.fileSize, getFilenameFromPath(outputPath));
+	//save and exit
+	if (outputPath) {
+		if (wav::save(ofptr) <= 0) {
+			char errBuffer[256] = {};
+			strerror_s(errBuffer, errno);
+			printf_s("[ERR] Issue opening output file (%s)\n", errBuffer);
+			return 0;
+		}
+		else {
+			printf_s("[Encode complete, wrote %i bytes to %s]\n", wav::header.fileSize, getFilenameFromPath(outputPath));
+		}
+	}
+	else {
+		printf_s("[Encode complete, storing %i bytes]\n", wav::header.fileSize);
+	}	
+
 	printf_s(" Expected time: %f MS\n", wav::expectedDurationMS);
 	printf_s(" Actual time:   %f MS\n", wav::actualDurationMS);
 	printf_s(" Added: %i Skipped: %i\n", wav::balance_AddedSamples, wav::balance_SkippedSamples);
 
 	if (playback) {
 		printf_s("[PLAYING...]\n");
-		wav::beginPlayback();
+		wav::beginPlayback(playbackDevice);
 	}
 }
