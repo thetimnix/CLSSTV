@@ -253,7 +253,7 @@ int main(int argc, char* argv[])
 	//add 500ms footer
 	wav::addTone(0, 500.f);
 	
-	//save and exit
+	//save file if requested and print info
 	if (outputPath) {
 		if (wav::save(ofptr) <= 0) {
 			char errBuffer[256] = {};
@@ -273,8 +273,10 @@ int main(int argc, char* argv[])
 	printf_s(" Actual time:   %f MS\n", wav::actualDurationMS);
 	printf_s(" Added: %i Skipped: %i\n", wav::balance_AddedSamples, wav::balance_SkippedSamples);
 
+	//playback the file if requested
 	if (playback) {
-		printf_s("[PLAYING...]\n");
-		wav::beginPlayback(playbackDevice);
+		wav::beginPlayback(playbackDevice); //includes progress bar
+		printf_s("\n[EXITING]");
+		Sleep(500);
 	}
 }

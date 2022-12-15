@@ -1,4 +1,4 @@
-#include <iostream>
+﻿#include <iostream>
 #include <stdio.h>
 #include <stdlib.h>
 #include <windows.h>
@@ -140,7 +140,7 @@ namespace wav {
 			}
             
             //list devices
-			printf_s(" Device %d: %S\n", i, varName.pwszVal);
+			printf_s(" [%d]: %S\n", i, varName.pwszVal);
             
 			PropVariantClear(&varName);
 			pProps->Release();
@@ -207,6 +207,25 @@ namespace wav {
         return deviceID;
     }
 
+    void ShowConsoleCursor(bool showFlag)
+    {
+        HANDLE out = GetStdHandle(STD_OUTPUT_HANDLE);
+        CONSOLE_CURSOR_INFO cursorInfo;
+        GetConsoleCursorInfo(out, &cursorInfo);
+        cursorInfo.bVisible = showFlag;
+        SetConsoleCursorInfo(out, &cursorInfo);
+    }
+    
+    void generateProgressBar(int progress, char* buffer, int bufferWidth) {
+		int barWidth = bufferWidth - 2;
+		int barProgress = (barWidth * progress) / 100;
+		int barRemainder = barWidth - barProgress;
+		for (int i = 0; i < barProgress; i++) { buffer[i] = '='; }
+		for (int i = 0; i < barRemainder; i++) { buffer[i + barProgress] = '-'; }
+    }
+
+    //i have no fucking idea what this does, i copied it from an example and just monkey-typewriter'd it until it worked
+    char progressBarTxt[50] = {};
     void beginPlayback(int iDeviceID) {
         HRESULT hr = CoInitializeEx(nullptr, COINIT_SPEED_OVER_MEMORY);
         if (FAILED(hr)) {
@@ -219,8 +238,7 @@ namespace wav {
         IMMDevice* audioDevice;
         hr = deviceEnumerator->GetDevice(WASAPIGetDeviceIdByIndex(iDeviceID), &audioDevice);
         if (FAILED(hr)) {
-            //probably a bad device ID, user was warned above, just quit
-            return;
+            return; //probably a failure in WASAPIGetDeviceIdByIndex, user was warned above, just quit
         }
         
         deviceEnumerator->Release();
@@ -230,6 +248,7 @@ namespace wav {
 
         audioDevice->Release();
         
+        //pretty much the same as the wav header class
         WAVEFORMATEX mixFormat = {};
         mixFormat.wFormatTag = WAVE_FORMAT_PCM;
         mixFormat.nChannels = header.channels;
@@ -238,11 +257,11 @@ namespace wav {
         mixFormat.nBlockAlign = (mixFormat.nChannels * mixFormat.wBitsPerSample) / 8;
         mixFormat.nAvgBytesPerSec = mixFormat.nSamplesPerSec * mixFormat.nBlockAlign;
 
-        const int64_t REFTIMES_PER_SEC = 10000000; // hundred nanoseconds
-        REFERENCE_TIME requestedSoundBufferDuration = REFTIMES_PER_SEC * 2;
+        //initialize the audio client
         DWORD initStreamFlags = (AUDCLNT_STREAMFLAGS_RATEADJUST | AUDCLNT_STREAMFLAGS_AUTOCONVERTPCM | AUDCLNT_STREAMFLAGS_SRC_DEFAULT_QUALITY);
-        hr = audioClient->Initialize(AUDCLNT_SHAREMODE_SHARED, initStreamFlags, requestedSoundBufferDuration, 0, &mixFormat, nullptr);
+        hr = audioClient->Initialize(AUDCLNT_SHAREMODE_SHARED, initStreamFlags, (REFERENCE_TIME)10000000, 0, &mixFormat, nullptr);
 
+        //initialize the renderer
         IAudioRenderClient* audioRenderClient;
         hr = audioClient->GetService(__uuidof(IAudioRenderClient), (LPVOID*)(&audioRenderClient));
 
@@ -254,36 +273,49 @@ namespace wav {
         int lastPrintedPercentage = 0;
         bool finished = false;
         
+        ShowConsoleCursor(false);
+        
         while (!finished)
         {
+            //i dont know what the padding does
             UINT32 bufferPadding;
             hr = audioClient->GetCurrentPadding(&bufferPadding);
 
-            UINT32 soundBufferLatency = bufferSizeInFrames / 50;
-            UINT32 numFramesToWrite = soundBufferLatency - bufferPadding;
-
+            //some form of maths ¯\_(._.)_/¯
+            int soundBufferLatency = bufferSizeInFrames / 50;
+            int numFramesToWrite = soundBufferLatency - bufferPadding;
+            
+            //gets the buffer from the audio client that you can proceed to squirt audio data into
             short* buffer;
             hr = audioRenderClient->GetBuffer(numFramesToWrite, (BYTE**)(&buffer));
-
-            for (UINT32 frameIndex = 0; frameIndex < numFramesToWrite; ++frameIndex)
-            {                                
+            
+            //data squirtery loop
+            for (int frameIndex = 0; frameIndex < numFramesToWrite; ++frameIndex)
+            {                    
+				//squirt the audio data from the wav file into the playback buffer
                 *buffer++ = ((short*)wavheap)[wavPlaybackSample];
-
+                
+                //progress bar code only
 				int percentage = (int)((float)wavPlaybackSample / (float)writeIndex * 100.f);
 				if (percentage > lastPrintedPercentage) {
-					printf_s(" Playback: %i%%\r", percentage);
+					generateProgressBar(percentage, progressBarTxt, 50);
+					printf_s("\r[PLAYING][%s][%i%%]", progressBarTxt, percentage); //i kinda feel this shouldnt be done like this. maybe play in another thread?
 					lastPrintedPercentage = percentage;
 				}
-
+                
+                //next sample
                 ++wavPlaybackSample;
             }
 
+            //if its done then quit out of the loop
             if (wavPlaybackSample > writeIndex) {
                 finished = true;
+                ShowConsoleCursor(true);
                 break;
             }
             
-            hr = audioRenderClient->ReleaseBuffer(numFramesToWrite, 0);
+            //free up the buffer because memory
+            audioRenderClient->ReleaseBuffer(numFramesToWrite, 0);
         }
 
         audioClient->Stop();
