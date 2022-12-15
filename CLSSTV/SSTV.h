@@ -58,6 +58,7 @@ namespace SSTV {
     };
 
     void addVoxTone();
-    void addVisCode(char visCode, int forceParity = -1);
+    void addVisCode(char visCode);
+    void addVisCodeManual(char visCode);
 }
 

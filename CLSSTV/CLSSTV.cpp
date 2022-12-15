@@ -35,7 +35,7 @@ SSTV::rgb* resizeNN(SSTV::rgb* input, vec2 inputSize, vec2 newSize) {
 		return input;
 	}
 	
-	printf_s("[Resizing. This is not recommended, resize manually first!]\n");
+	printf_s("[Resizing: %ix%i ==> %ix%i]\n", inputSize.X, inputSize.Y, newSize.X, newSize.Y);
 	
 	SSTV::rgb* output = new SSTV::rgb[newSize.Y * newSize.X];
 	if (!output) { return nullptr; }
@@ -192,6 +192,9 @@ int main(int argc, char* argv[])
 	//draw overlay
 	tr::drawString(resizedRGB, selectedEncMode->size, { 0, 0 }, "CLSSTV %s", VERSION);
 
+	//add 500ms header
+	wav::addTone(0, 500.f);
+	
 	//add VOX tone
 	SSTV::addVoxTone();
 
@@ -276,7 +279,5 @@ int main(int argc, char* argv[])
 	//playback the file if requested
 	if (playback) {
 		wav::beginPlayback(playbackDevice); //includes progress bar
-		printf_s("\n[EXITING]");
-		Sleep(500);
 	}
 }

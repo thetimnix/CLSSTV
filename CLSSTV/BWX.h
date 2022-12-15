@@ -18,8 +18,8 @@ void encodeBW(SSTV::rgb* rgbBuffer, double lineMS) {
         wav::addTone(1200, 6.f);
         wav::addTone(1500, 2.f);
         for (int x = 0; x < img_width; x++) {
-            SSTV::rgb c = rgbBuffer[(y * img_width) + x];
-            wav::addTone(1500 + (CFMultiplier * ((c.r + c.g + c.b) / 3)), mspp); //image data, average of RGB
+            SSTV::yuv c(rgbBuffer[(y * img_width) + x]);
+            wav::addTone(1500 + (CFMultiplier * c.y), mspp); //image data, average of RGB
         }
     }
 }
@@ -30,6 +30,6 @@ void encodeBW8(SSTV::rgb* rgbBuffer) {
 }
 
 void encodeBW12(SSTV::rgb* rgbBuffer) {
-    SSTV::addVisCode(0x03, 1); //VIS is non-standard and must be forced to have a parity of 1
+    SSTV::addVisCodeManual(0x86);
     encodeBW(rgbBuffer, 92.f);
 }

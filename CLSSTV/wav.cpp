@@ -75,7 +75,7 @@ namespace wav {
             angle += ((2 * pi * frequency) / header.sampleRate);
             writeIndex++;
 
-            //balances issues with timing. see note.
+            //balances issues with timing. see note at the bottom.
             float diff = actualDurationMS - expectedDurationMS;
             if (diff > msPerSample) {
                 sampleCount--;
@@ -310,6 +310,7 @@ namespace wav {
             //if its done then quit out of the loop
             if (wavPlaybackSample > writeIndex) {
                 finished = true;
+                Sleep(1000);
                 ShowConsoleCursor(true);
                 break;
             }
@@ -330,3 +331,5 @@ namespace wav {
         return fwrite(wavheap, header.fileSize, 1, fptr);
     }
 }
+
+//todo: explain balancing again

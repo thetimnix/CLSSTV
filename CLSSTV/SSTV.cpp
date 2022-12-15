@@ -17,7 +17,8 @@ namespace SSTV {
         wav::addTone(1500, 100);
     }
 
-    void addVisCode(char visCode, int forceParity) {
+    //adds the first 7 bytes and uses 8 for parity
+    void addVisCode(char visCode) {
         wav::addTone(1900, 300);
         wav::addTone(1200, 10);
         wav::addTone(1900, 300);
@@ -37,20 +38,32 @@ namespace SSTV {
             }
         }
 
-        //some modes use the parity bit weirdly, it can be forced low or high on a case-by-case basis
-        if (forceParity == 1) {
-            wav::addTone(1100, 30); //force 1
-        }
-        else if (forceParity == 0) {
-            wav::addTone(1300, 30); //force 0
+        if (ones % 2 == 0) {
+            wav::addTone(1300, 30); //parity 0 if even
         }
         else {
-            if (ones % 2 == 0) { 
-                wav::addTone(1300, 30); //parity 0 if even
-            } 
-            else { 
-                wav::addTone(1100, 30); //parity 1 if odd
-            } 
+            wav::addTone(1100, 30); //parity 1 if odd
+        }
+
+        wav::addTone(1200, 30);
+    }
+
+    //adds all 8 bytes of the input, without calculating the parity bit
+    void addVisCodeManual(char visCode) {
+        wav::addTone(1900, 300);
+        wav::addTone(1200, 10);
+        wav::addTone(1900, 300);
+        wav::addTone(1200, 30);
+
+        int bit = 0;
+        for (int i = 0; i < 8; i++) {
+            bit = (visCode >> i) & 1;
+            if (bit) {
+                wav::addTone(1100, 30); //1
+            }
+            else {
+                wav::addTone(1300, 30); //0
+            }
         }
 
         wav::addTone(1200, 30);
