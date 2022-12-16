@@ -17,7 +17,6 @@ namespace SSTV {
         wav::addTone(1500, 100);
     }
 
-    //adds the first 7 bytes and uses 8 for parity
     void addVisCode(char visCode) {
         wav::addTone(1900, 300);
         wav::addTone(1200, 10);
@@ -48,7 +47,6 @@ namespace SSTV {
         wav::addTone(1200, 30);
     }
 
-    //adds all 8 bytes of the input, without calculating the parity bit
     void addVisCodeManual(char visCode) {
         wav::addTone(1900, 300);
         wav::addTone(1200, 10);

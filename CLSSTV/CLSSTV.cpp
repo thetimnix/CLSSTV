@@ -190,7 +190,7 @@ int main(int argc, char* argv[])
 	resizedRGB = resizeNN(rgbBuffer, imgSize, selectedEncMode->size);
 
 	//draw overlay
-	tr::drawString(resizedRGB, selectedEncMode->size, { 0, 0 }, "CLSSTV %s", VERSION);
+	tr::drawString(resizedRGB, selectedEncMode->size, { 0, 0 }, "%s", selectedEncMode->code);
 
 	//add 500ms header
 	wav::addTone(0, 500.f);
@@ -278,6 +278,6 @@ int main(int argc, char* argv[])
 
 	//playback the file if requested
 	if (playback) {
-		wav::beginPlayback(playbackDevice); //includes progress bar
+		wav::beginPlayback(playbackDevice); //includes progress bar, pausing, etc
 	}
 }

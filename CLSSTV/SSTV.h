@@ -57,8 +57,13 @@ namespace SSTV {
         }
     };
 
+    
     void addVoxTone();
+
+    //adds the first 7 bytes and uses 8 for parity
     void addVisCode(char visCode);
+
+    //adds all 8 bytes of the input, without calculating the parity bit
     void addVisCodeManual(char visCode);
 }
 

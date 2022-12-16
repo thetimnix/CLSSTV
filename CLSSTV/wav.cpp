@@ -33,6 +33,7 @@ namespace wav {
         return 1;
     }
 
+	//add a tone to the wav file, duration in MS
     void addTone(short frequency, float duration, generatorType gt) {
         //number of samples required for the requested duration. sometimes.
         int sampleCount = round((header.sampleRate) * (duration / 1000.f));

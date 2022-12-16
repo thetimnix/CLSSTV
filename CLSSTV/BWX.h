@@ -5,7 +5,6 @@
 
 /*
     These are kind of a mess as BW8 and BW12 are not very well documented.
-    Sources differ on what the timings should be and some report different versions of the 8s mode that use different timings.
     All timing values were taken from the MMSSTV source code.
 */
 
@@ -19,7 +18,7 @@ void encodeBW(SSTV::rgb* rgbBuffer, double lineMS) {
         wav::addTone(1500, 2.f);
         for (int x = 0; x < img_width; x++) {
             SSTV::yuv c(rgbBuffer[(y * img_width) + x]);
-            wav::addTone(1500 + (CFMultiplier * c.y), mspp); //image data, average of RGB
+            wav::addTone(1500 + (CFMultiplier * c.y), mspp); //Luminance (Y) only, average of RGB also works.
         }
     }
 }
