@@ -156,9 +156,15 @@ int main(int argc, char* argv[])
 		return 0;
 	}
 	
+	//init wav system
+	if (!wav::init(48000)) {
+		printf_s("[ERR] Could not allocate WAV memory\n");
+		return 0;
+	}
+	
 	//begin encode
 	printf_s("[CLSSTV R%s 2022]\n", VERSION);
-	printf_s("[Beginning SSTV generation @ %iKHz]\n", wav::header.sampleRate);
+	printf_s("[Beginning SSTV generation @ %iHz]\n", wav::header.sampleRate);
 
 	//read input image
 	vec2 imgSize = { 0, 0 };
@@ -170,12 +176,6 @@ int main(int argc, char* argv[])
 	
 	if (!rgbBuffer) { 
 		printf_s("[ERR] Could not read source file\n");
-		return 0;
-	}
-
-	//init wav system
-	if (!wav::init()) {
-		printf_s("[ERR] Could not allocate WAV memory\n");
 		return 0;
 	}
 	

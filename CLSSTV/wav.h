@@ -28,7 +28,7 @@ namespace wav {
         short S;
     };
 
-    int init();
+    int init(int sampleRate);
     void addTone(short frequency, float duration, generatorType gt = generatorType::GT_SINE);
     int save(FILE* fptr);
     void beginPlayback(int iDeviceID);

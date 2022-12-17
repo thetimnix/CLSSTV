@@ -148,6 +148,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BWX.h" />
+    <ClInclude Include="fontData.h" />
     <ClInclude Include="modes.h" />
     <ClInclude Include="MRX.h" />
     <ClInclude Include="PDX.h" />

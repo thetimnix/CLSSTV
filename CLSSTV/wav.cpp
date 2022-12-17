@@ -23,7 +23,9 @@ namespace wav {
     int bytesWritten = 0;
     int writeIndex = 0;
 
-    int init() {
+    int init(int sampleRate) {
+		header.sampleRate = sampleRate;
+        header.SBC = (header.sampleRate * header.BPS * header.channels) / 8;
         header.dataSize = (static_cast<unsigned long long>(header.sampleRate) * 15) * sizeof(short);
         header.fileSize = header.dataSize + sizeof(wavHeader);
         wavheap = malloc(header.fileSize);
@@ -40,7 +42,7 @@ namespace wav {
 
         //balancing
         expectedDurationMS += duration;
-        actualDurationMS += (sampleCount / static_cast<double>(48000)) * 1000;
+        actualDurationMS += (sampleCount / static_cast<double>(header.sampleRate)) * 1000;
         float msPerSample = 1000.f / header.sampleRate;
 
         //if you're gonna run out of space in the wav then add more in 15 second chunks.
