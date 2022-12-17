@@ -5,8 +5,22 @@ namespace tr {
 
 	//run init before dereferencing this
 	SSTV::rgb* rgbFont = 0;
-
 	vec2 fontImageSize = { 144, 101 };
+	
+	SSTV::rgb* boundCanvas = 0;
+	vec2 boundCanvasSize = { 0, 0 };
+	
+	int iFontSize = 1;	
+	vec2 iOrigin = { 0, 0 };
+
+	SSTV::rgb white = { 255, 255, 255 };
+	SSTV::rgb black = { 0, 0, 0 };
+	SSTV::rgb red = { 255, 0, 0 };
+	SSTV::rgb green = { 0, 255, 0 };
+	SSTV::rgb blue = { 0, 0, 255 };
+	SSTV::rgb yellow = { 255, 255, 0 };
+	SSTV::rgb cyna = { 0, 255, 255 };
+	SSTV::rgb violet = { 255, 0, 255 };
 	
 	//monochrome font data, compressed so each byte contains 8 pixels
 	//font from https://github.com/epto/epto-fonts
@@ -136,16 +150,33 @@ namespace tr {
 		'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '|', '}', '~', ' ',
 	};
 	
-	void drawCharacter(SSTV::rgb* canvas, vec2 canvasSize, char c, vec2 pos) {
+	void drawCharacter(SSTV::rgb colour, char c, vec2 pos, int fontSize) {
+
+		SSTV::rgb white = { 255, 255, 255 };
+		SSTV::rgb black = { 0, 0, 0 };
+		
 		int cmIndex = 0;
 		for (char cm : fontMap) {
 			if (cm == c) {
 				vec2 map = { cmIndex % 16, cmIndex / 16 };
 				vec2 mapPosExpanded = { (map.X * 8) + ((map.X * 8) / 8), (map.Y * 16) + ((map.Y * 16) / 16) };
 				
+				//pixel
 				for (int y = 0; y < 16; y++) {
 					for (int x = 0; x < 8; x++) {
-						canvas[((pos.Y + y) * canvasSize.X) + (pos.X + x)] = rgbFont[((mapPosExpanded.Y + y) * fontImageSize.X) + (mapPosExpanded.X + x)];
+
+						//subpixel
+						for (int spY = 0; spY < fontSize; spY++) {
+							for (int spX = 0; spX < fontSize; spX++) {
+								
+								//actual drawing
+								int canvasOffset = ((pos.Y + (y * fontSize) + spY) * boundCanvasSize.X) + (pos.X + (x * fontSize) + spX);
+								int fontOffset = ((mapPosExpanded.Y + y) * fontImageSize.X) + (mapPosExpanded.X + x);
+								if ((canvasOffset <= (boundCanvasSize.X * boundCanvasSize.Y) && canvasOffset >= 0) && (fontOffset <= (fontImageSize.X * fontImageSize.Y) && fontOffset >= 0)) {
+									boundCanvas[canvasOffset] = rgbFont[fontOffset] == white ? colour : rgbFont[fontOffset];
+								}
+							}
+						}
 					}
 				}
 				
@@ -155,16 +186,28 @@ namespace tr {
 		}
 	}
 
-	void drawSpacer(SSTV::rgb* canvas, vec2 canvasSize, int width, vec2 pos) {
-		for (int y = 0; y < 16; y++) {
-			for (int x = 0; x < width; x++) {
+	void drawSpacer(SSTV::rgb* canvas, vec2 canvasSize, int width, vec2 pos, int fontSize) {
+		for (int y = 0; y < 16 * fontSize; y++) {
+			for (int x = 0; x < width * fontSize; x++) {
 				canvas[((pos.Y + y) * canvasSize.X) + (pos.X + x)] = { 0, 0, 0 };
 			}
 		}
 	}
+
+	void setTextOrigin(vec2 origin) {
+		iOrigin = origin;
+	}
+
+	void bindToCanvas(SSTV::rgb* canvas, vec2 canvasSize) {
+		boundCanvas = canvas;
+		boundCanvasSize = canvasSize;
+	}
 	
 	//text overrunning the edge of the provided canvas will be truncated
-	void drawString(SSTV::rgb* canvas, vec2 canvasSize, vec2 pos, const char* fmt...) {
+	void drawString(SSTV::rgb colour, int fontSize, const char* fmt...) {
+		if (!boundCanvas) {
+			return;
+		}
 		
 		//format string into buffer
 		va_list lst;
@@ -177,23 +220,22 @@ namespace tr {
 		int offset = 0;
 		int spacerWidth = 2;
 		
-		drawSpacer(canvas, canvasSize, spacerWidth, { pos.X, pos.Y });
-		offset += spacerWidth;
+		drawSpacer(boundCanvas, boundCanvasSize, spacerWidth, { iOrigin.X, iOrigin.Y }, fontSize);
+		offset += spacerWidth * fontSize;
 		
 		//draw the required characters with 1px between them
 		for (int i = 0; i < strlen(buffer); i++) {
-			if ((offset + 8) > canvasSize.X) {
+			if ((iOrigin.X + offset + (8 * fontSize)) > boundCanvasSize.X) {
 				return;
 			}
 			
-			drawCharacter(canvas, canvasSize, buffer[i], { pos.X + offset, pos.Y });
-			offset += 8;
-			drawSpacer(canvas, canvasSize, spacerWidth, { pos.X + offset, pos.Y });
-			offset += spacerWidth;
+			drawCharacter(colour, buffer[i], { iOrigin.X + offset, iOrigin.Y }, fontSize);
+			offset += 8 * fontSize;
+			drawSpacer(boundCanvas, boundCanvasSize, spacerWidth, { iOrigin.X + offset, iOrigin.Y }, fontSize);
+			offset += spacerWidth * fontSize;
 		}
 
-		drawSpacer(canvas, canvasSize, spacerWidth, { pos.X + offset, pos.Y });
-		offset += spacerWidth;
+		iOrigin.Y += 16 * fontSize;
 	}
 	
 	SSTV::rgb* decompressFontData(char* compressed, int size) {

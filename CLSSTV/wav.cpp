@@ -311,7 +311,7 @@ namespace wav {
             //if its done then quit out of the loop
             if (wavPlaybackSample > writeIndex) {
                 finished = true;
-                Sleep(1000);
+                Sleep(500);
                 ShowConsoleCursor(true);
                 break;
             }

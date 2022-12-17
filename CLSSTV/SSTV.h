@@ -32,6 +32,19 @@ namespace SSTV {
         unsigned char g;
         unsigned char b;
         
+        bool operator == (const rgb& rhs)
+        {
+            if (r == rhs.r && g == rhs.g && b == rhs.b) {
+                return true;
+            }
+            return false;
+        }
+
+        bool operator != (const rgb& rhs)
+        {
+            return !(*this == rhs);
+        }
+        
         rgb(unsigned char R, unsigned char G, unsigned char B) {
             r = R;
             g = G;

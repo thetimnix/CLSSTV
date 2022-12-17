@@ -8,10 +8,19 @@ namespace tr {
 		int mapY;
 	};
 	
+	extern SSTV::rgb white;
+	extern SSTV::rgb black;
+	extern SSTV::rgb red;
+	extern SSTV::rgb green;
+	extern SSTV::rgb blue;
+	extern SSTV::rgb yellow;
+	extern SSTV::rgb cyna;
+	extern SSTV::rgb violet;
+	
 	void initFont();
-	void drawCharacter(SSTV::rgb* canvas, vec2 canvasSize, char c, vec2 pos);
-	void drawString(SSTV::rgb* canvas, vec2 canvasSize, vec2 pos, const char* fmt...);
-	void drawLine(SSTV::rgb* canvas, vec2 canvasSize, vec2 pos1, vec2 pos2);
+	void drawString(SSTV::rgb colour, int fontSize, const char* fmt...);
+	void setTextOrigin(vec2 origin);
+	void bindToCanvas(SSTV::rgb* canvas, vec2 canvasSize);
 	extern SSTV::rgb* rgbFont;
 
 }

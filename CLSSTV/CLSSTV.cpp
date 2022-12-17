@@ -19,6 +19,7 @@
 
 #define VERSION "1.6"
 
+//gets the substring after the last '/' character
 const char* getFilenameFromPath(const char* path) {
 	const char* filename = path;
 	for (int x = strlen(path); x > 0; x--) {
@@ -31,9 +32,7 @@ const char* getFilenameFromPath(const char* path) {
 
 SSTV::rgb* resizeNN(SSTV::rgb* input, vec2 inputSize, vec2 newSize) {
 	//dont need to do anything if its already the right size, return the origional to save memory
-	if (inputSize == newSize) {
-		return input;
-	}
+	if (inputSize == newSize) { return input; }
 	
 	printf_s("[Resizing: %ix%i ==> %ix%i]\n", inputSize.X, inputSize.Y, newSize.X, newSize.Y);
 	
@@ -150,12 +149,18 @@ int main(int argc, char* argv[])
 		printHelp();
 		return 0;
 	}
+
+	//make sure the encode mode is valid
+	if (!selectedEncMode) {
+		printf_s("[ERR] Invalid encode method, see -M");
+		return 0;
+	}
 	
 	//begin encode
 	printf_s("[CLSSTV R%s 2022]\n", VERSION);
 	printf_s("[Beginning SSTV generation @ %iKHz]\n", wav::header.sampleRate);
 
-	//read input jpg
+	//read input image
 	vec2 imgSize = { 0, 0 };
 	int imgChannels = 4;
 	SSTV::rgb* rgbBuffer = nullptr;
@@ -190,8 +195,10 @@ int main(int argc, char* argv[])
 	resizedRGB = resizeNN(rgbBuffer, imgSize, selectedEncMode->size);
 
 	//draw overlay
-	tr::drawString(resizedRGB, selectedEncMode->size, { 0, 0 }, "%s", selectedEncMode->code);
-
+	tr::bindToCanvas(resizedRGB, selectedEncMode->size);
+	tr::setTextOrigin({ 0, 0 });
+	tr::drawString(tr::white, 1, "%s", selectedEncMode->code);
+	
 	//add 500ms header
 	wav::addTone(0, 500.f);
 	
@@ -264,9 +271,7 @@ int main(int argc, char* argv[])
 			printf_s("[ERR] Issue opening output file (%s)\n", errBuffer);
 			return 0;
 		}
-		else {
-			printf_s("[Encode complete, wrote %i bytes to %s]\n", wav::header.fileSize, getFilenameFromPath(outputPath));
-		}
+		printf_s("[Encode complete, wrote %i bytes to %s]\n", wav::header.fileSize, getFilenameFromPath(outputPath));
 	}
 	else {
 		printf_s("[Encode complete, storing %i bytes]\n", wav::header.fileSize);
@@ -277,7 +282,17 @@ int main(int argc, char* argv[])
 	printf_s(" Added: %i Skipped: %i\n", wav::balance_AddedSamples, wav::balance_SkippedSamples);
 
 	//playback the file if requested
+	bool first = true;
 	if (playback) {
-		wav::beginPlayback(playbackDevice); //includes progress bar, pausing, etc
+		while (true) {
+			if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) {
+				break;
+			}
+			else if (GetAsyncKeyState('R') & 0x8000 || first) {
+				first = false;
+				wav::beginPlayback(playbackDevice);
+				printf_s("\n[End of playback. Press R to reply or ESC to exit.]\n");
+			}
+		}
 	}
 }
