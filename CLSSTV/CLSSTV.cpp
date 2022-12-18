@@ -68,6 +68,7 @@ void printHelp() {
 	printf_s(" -O: Output path (WAV)\n");
 	printf_s("\nOptional / util:\n");
 	printf_s(" -P: Play generated audio, use with or instead of -O\n");
+	printf_s(" -S: Set the sample rate (8khz default)\n");
 	printf_s(" -L: List encode modes\n");
 	printf_s(" -D: List playback devices\n");
 	printf_s(" -H: Show this help text\n");
@@ -100,6 +101,9 @@ int main(int argc, char* argv[])
 		return 0;
 	}
 	
+	//program info
+	printf_s("[CLSSTV R%s 2022]\n", VERSION);
+	
 	//output file pointer
 	FILE* ofptr = 0;
 
@@ -114,19 +118,24 @@ int main(int argc, char* argv[])
 	char* outputPath = 0;
 	bool playback = false;
 	int playbackDevice = -1;
+
+	bool setSampleRate = false;
+	int sampleRate = 8000;
+	int standardSampleRates[] = { 8000, 11025, 16000, 22050, 32000, 44100, 48000, 96000 };
+	bool usingStandardSampleRate = false;
 	
 	for (int i = 0; i < argc; i++) {
-		//find input argument
+		//find -I switch and input argument
 		if (strcmp(argv[i], "-I") == 0 && i + 1 <= argc) {
 			inputPath = argv[i + 1];
 		}
 		
-		//find output argument
+		//find -O switch and output argument
 		if (strcmp(argv[i], "-O") == 0 && i + 1 <= argc) {
 			outputPath = argv[i + 1];
 		}
 
-		//find encode mode
+		//find -M switch and encode mode
 		if (strcmp(argv[i], "-M") == 0 && i + 1 <= argc && !validEncMode) {
 			for (encMode& em : modes) {
 				if (strcmp(argv[i + 1], em.code) == 0) {
@@ -140,6 +149,28 @@ int main(int argc, char* argv[])
 		if (strcmp(argv[i], "-P") == 0 && i + 1 <= argc) {
 			playbackDevice = strtol(argv[i + 1], NULL, 10);
 			playback = true;
+		}
+
+		//find -S switch and sample rate
+		if (strcmp(argv[i], "-S") == 0 && i + 1 <= argc && !setSampleRate) {
+			sampleRate = strtol(argv[i + 1], NULL, 10);
+			if (sampleRate <= 0) {
+				printf_s("[Invalid sample rate, using default]\n");
+				sampleRate = 8000;
+			}
+			else {
+				for (int sr : standardSampleRates) {
+					if (sr == sampleRate) {
+						usingStandardSampleRate = true;
+					}
+				}
+			}
+
+			if (!usingStandardSampleRate) {
+				printf_s("[Non-standard sample rate set, expect possible issues]\n");
+			}
+			
+			setSampleRate = true;
 		}
 	}
 
@@ -157,13 +188,12 @@ int main(int argc, char* argv[])
 	}
 	
 	//init wav system
-	if (!wav::init(48000)) {
+	if (!wav::init(sampleRate)) {
 		printf_s("[ERR] Could not allocate WAV memory\n");
 		return 0;
 	}
 	
 	//begin encode
-	printf_s("[CLSSTV R%s 2022]\n", VERSION);
 	printf_s("[Beginning SSTV generation @ %iHz]\n", wav::header.sampleRate);
 
 	//read input image
