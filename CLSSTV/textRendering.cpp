@@ -23,7 +23,7 @@ namespace tr {
 	SSTV::rgb green  = { 0,   255, 0   };
 	SSTV::rgb blue   = { 0,   0,   255 };
 	SSTV::rgb yellow = { 255, 255, 0   };
-	SSTV::rgb cyna   = { 0,   255, 255 };
+	SSTV::rgb cyan   = { 0,   255, 255 };
 	SSTV::rgb violet = { 255, 0,   255 };
 	
 	//this is clearly too many loops within loops but it works and im not sure how to improve it

@@ -50,7 +50,7 @@ SSTV::rgb* resizeNN(SSTV::rgb* input, vec2 inputSize, vec2 newSize) {
 			int readIndex = (int)(y / yScale) * inputSize.X + (int)(x / xScale);
 
 			//set the pixel to the closest value, avoid any over/underflows. VS still complains about the possibility.
-			if (writeIndex < (newSize.Y * newSize.X) && readIndex < (inputSize.X * inputSize.Y) && writeIndex >= 0 && readIndex >= 0) {
+			if (writeIndex <= (newSize.Y * newSize.X) && readIndex <= (inputSize.X * inputSize.Y) && writeIndex >= 0 && readIndex >= 0) {
 				output[writeIndex] = input[readIndex];
 			}
 		}
@@ -61,14 +61,18 @@ SSTV::rgb* resizeNN(SSTV::rgb* input, vec2 inputSize, vec2 newSize) {
 
 void printHelp() {
 	printf_s("[CLSSTV USAGE]\n");
-	printf_s("CLSSTV.exe -M [MODE] -I [INPUT.XXX] -O [OUTPUT.WAV] (-P [DEVICE])\n");
-	printf_s("\nRequired:\n");
+	printf_s("EXAMPLE: CLSSTV.exe -M [MODE] -I [INPUT] -O [OUTPUT] -P [DEVICE]\n\n");
+	
+	printf_s("Required:\n");
 	printf_s(" -M: Encode mode\n");
 	printf_s(" -I: Input path  (JPG / PNG / BMP / GIF)\n");
+	printf_s("Require either:\n");
 	printf_s(" -O: Output path (WAV)\n");
-	printf_s("\nOptional / util:\n");
 	printf_s(" -P: Play generated audio, use with or instead of -O\n");
-	printf_s(" -S: Set the sample rate (8khz default)\n");
+	printf_s("Optional:\n");
+	printf_s(" -SR: Set the sample rate (8khz default)\n");
+	printf_s(" -CS: Callsign to draw on the top right, no spaces\n");
+	printf_s("Help:\n");
 	printf_s(" -L: List encode modes\n");
 	printf_s(" -D: List playback devices\n");
 	printf_s(" -H: Show this help text\n");
@@ -116,6 +120,8 @@ int main(int argc, char* argv[])
 	
 	char* inputPath = 0;
 	char* outputPath = 0;
+	char* callsign = 0;
+	
 	bool playback = false;
 	int playbackDevice = -1;
 
@@ -124,14 +130,16 @@ int main(int argc, char* argv[])
 	int standardSampleRates[] = { 8000, 11025, 16000, 22050, 32000, 44100, 48000, 96000 };
 	bool usingStandardSampleRate = false;
 	
+
+	
 	for (int i = 0; i < argc; i++) {
 		//find -I switch and input argument
-		if (strcmp(argv[i], "-I") == 0 && i + 1 <= argc) {
+		if (strcmp(argv[i], "-I") == 0 && i + 1 <= argc && !inputPath) {
 			inputPath = argv[i + 1];
 		}
 		
 		//find -O switch and output argument
-		if (strcmp(argv[i], "-O") == 0 && i + 1 <= argc) {
+		if (strcmp(argv[i], "-O") == 0 && i + 1 <= argc && !outputPath) {
 			outputPath = argv[i + 1];
 		}
 
@@ -151,8 +159,9 @@ int main(int argc, char* argv[])
 			playback = true;
 		}
 
-		//find -S switch and sample rate
-		if (strcmp(argv[i], "-S") == 0 && i + 1 <= argc && !setSampleRate) {
+		//find -SR switch and sample rate
+		if (strcmp(argv[i], "-SR") == 0 && i + 1 <= argc && !setSampleRate) {
+			
 			sampleRate = strtol(argv[i + 1], NULL, 10);
 			if (sampleRate <= 0) {
 				printf_s("[Invalid sample rate, using default]\n");
@@ -172,11 +181,15 @@ int main(int argc, char* argv[])
 			
 			setSampleRate = true;
 		}
+
+		//find -CS switch and output argument
+		if (strcmp(argv[i], "-CS") == 0 && i + 1 <= argc && !callsign) {
+			callsign = argv[i + 1];
+		}
 	}
 
 	//validation stuff
 	if (!inputPath || !(playback || outputPath) || !validEncMode) {
-		printf_s("%i, %i, %i, %i\n", (bool)inputPath, playback, (bool)outputPath, validEncMode);
 		printHelp();
 		return 0;
 	}
@@ -224,11 +237,13 @@ int main(int argc, char* argv[])
 	SSTV::rgb* resizedRGB = 0;
 	resizedRGB = resizeNN(rgbBuffer, imgSize, selectedEncMode->size);
 
-	//draw overlay
-	tr::bindToCanvas(resizedRGB, selectedEncMode->size);
-	tr::setTextOrigin({ 0, 0 });
-	tr::drawString(tr::white, 1, "%s", selectedEncMode->code);
-	
+	//draw overlay	
+	if (callsign) {
+		tr::bindToCanvas(resizedRGB, selectedEncMode->size);
+		tr::setTextOrigin({ 0, 0 });
+		tr::drawString(tr::white, 1, "%s", callsign);
+	}
+
 	//add 500ms header
 	wav::addTone(0, 500.f);
 	
@@ -315,10 +330,11 @@ int main(int argc, char* argv[])
 	bool first = true;
 	if (playback) {
 		while (true) {
-			if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) {
-				break;
-			}
-			else if (GetAsyncKeyState('R') & 0x8000 || first) {
+			if ((GetConsoleWindow() != GetForegroundWindow()) && !first) { continue; }
+			
+			if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) { break; }
+			
+			if (GetAsyncKeyState('R') & 0x8000 || first) {
 				first = false;
 				wav::beginPlayback(playbackDevice);
 				printf_s("\n[End of playback. Press R to reply or ESC to exit.]\n");

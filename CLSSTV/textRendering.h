@@ -14,7 +14,7 @@ namespace tr {
 	extern SSTV::rgb green;
 	extern SSTV::rgb blue;
 	extern SSTV::rgb yellow;
-	extern SSTV::rgb cyna;
+	extern SSTV::rgb cyan;
 	extern SSTV::rgb violet;
 	
 	void initFont();
