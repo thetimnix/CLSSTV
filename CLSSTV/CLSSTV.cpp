@@ -24,15 +24,6 @@
 #include "textRendering.h"
 #include "modes.h"
 
-//#include "BWX.h" //BW8, BW12
-//#include "SCX.h" //Scottie1, Scottie2, ScottieDX
-//#include "R24.h" //Robot24
-//#include "R36.h" //Robot36
-//#include "R72.h" //Robot72
-//#include "PDX.h" //PD50, PD90, PD120
-//#include "MRX.h" //Martin1, Martin2 
-//#include "AVT.h" //AVT90
-
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
