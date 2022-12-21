@@ -6,6 +6,7 @@
 #include <audioclient.h>
 #include <functiondiscoverykeys.h>
 #include "wav.h"
+#include "SSTV.h"
 
 namespace wav {
     int ampl = 30000;
@@ -62,8 +63,7 @@ namespace wav {
         for (int i = 0; i < sampleCount; i++) {
             bytesWritten += (int)sizeof(short);
 
-            //calculates the actual sine wave
-            //these two lines took the longest in this entire project. fuck maths.
+            //calculates the actual waveform
             switch (gt) {
                 case GT_SINE:
                     wavData[writeIndex].S = (short)(ampl * sin(angle));
@@ -99,50 +99,51 @@ namespace wav {
 		IMMDeviceEnumerator* pEnumerator = NULL;
 		IMMDeviceCollection* pCollection = NULL;
 		UINT count;
-        HRESULT hr = CoInitializeEx(nullptr, COINIT_SPEED_OVER_MEMORY);
+        HRESULT hr = CoInitializeEx(nullptr, COINIT_SPEED_OVER_MEMORY); //coinit again
         if (FAILED(hr)) {
             printf_s("[ERR] Failed to CoInitialize!\n");
             return;
         }
-		hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL, CLSCTX_ALL, __uuidof(IMMDeviceEnumerator), (void**)&pEnumerator);
+		hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL, CLSCTX_ALL, __uuidof(IMMDeviceEnumerator), (void**)&pEnumerator); //create instance
 		if (FAILED(hr)) {
 			printf_s("[ERR] Failed to create device enumerator!\n");
 			return;
 		}
-		hr = pEnumerator->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &pCollection);
+		hr = pEnumerator->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &pCollection); //get all audio endpoints
 		if (FAILED(hr)) {
 			printf_s("[ERR] Failed to enumerate audio endpoints!\n");
 			return;
 		}
-		hr = pCollection->GetCount(&count);
+		hr = pCollection->GetCount(&count); //get the number of audio endpoints
 		if (FAILED(hr)) {
 			printf_s("[ERR] Failed to get device count!\n");
 			return;
 		}
 
+        //list em
         printf_s("[PLAYBACK DEVICES]\n");
 		for (UINT i = 0; i < count; i++) {
 			IMMDevice* pDevice = NULL;
 			IPropertyStore* pProps = NULL;
 			PROPVARIANT varName;
 			PropVariantInit(&varName);
-			hr = pCollection->Item(i, &pDevice);
+			hr = pCollection->Item(i, &pDevice); //get the audio endpoint at index i
 			if (FAILED(hr)) {
 				printf_s("[ERR] Failed to get device %d!\n", i);
 				return;
 			}
-			hr = pDevice->OpenPropertyStore(STGM_READ, &pProps);
+			hr = pDevice->OpenPropertyStore(STGM_READ, &pProps); //get its properties
 			if (FAILED(hr)) {
 				printf_s("[ERR] Failed to open property store for device %d!\n", i);
 				return;
 			}
-			hr = pProps->GetValue(PKEY_Device_FriendlyName, &varName);
+			hr = pProps->GetValue(PKEY_Device_FriendlyName, &varName); //get its name
 			if (FAILED(hr)) {
 				printf_s("[ERR] Failed to get friendly name for device %d!\n", i);
 				return;
 			}
             
-            //list devices
+            //print its index and name
 			printf_s(" [%d]: %S\n", i, varName.pwszVal);
             
 			PropVariantClear(&varName);
@@ -157,32 +158,33 @@ namespace wav {
         IMMDeviceEnumerator* pEnumerator = NULL;
         IMMDeviceCollection* pCollection = NULL;
         UINT count;
-        HRESULT hr = CoInitializeEx(nullptr, COINIT_SPEED_OVER_MEMORY);
+        HRESULT hr = CoInitializeEx(nullptr, COINIT_SPEED_OVER_MEMORY); //coinit again
         if (FAILED(hr)) {
             printf_s("[ERR] Failed to CoInitialize!\n");
             return 0;
         }
-        hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL, CLSCTX_ALL, __uuidof(IMMDeviceEnumerator), (void**)&pEnumerator);
+        hr = CoCreateInstance(__uuidof(MMDeviceEnumerator), NULL, CLSCTX_ALL, __uuidof(IMMDeviceEnumerator), (void**)&pEnumerator); //create instance
         if (FAILED(hr)) {
             printf_s("[ERR] Failed to create device enumerator!\n");
             return 0;
         }
-        hr = pEnumerator->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &pCollection);
+        hr = pEnumerator->EnumAudioEndpoints(eRender, DEVICE_STATE_ACTIVE, &pCollection); //get all audio endpoints
         if (FAILED(hr)) {
             printf_s("[ERR] Failed to enumerate audio endpoints!\n");
             return 0;
         }
-        hr = pCollection->GetCount(&count);
+        hr = pCollection->GetCount(&count); //get number of audio endpoints
         if (FAILED(hr)) {
             printf_s("[ERR] Failed to get device count!\n");
             return 0;
         }
 
-        if (index < 0 || index > count) {
+        if (index < 0 || index > count) { //make sure the user requested a valid audio device
 			printf_s("[ERR] Invalid device index, see -D\n");
 			return 0;
         }
         
+        //buffers for the devices ID
         wchar_t* deviceID = (wchar_t*)malloc(128);
         if (!deviceID) { return 0; }
         
@@ -190,12 +192,12 @@ namespace wav {
         IPropertyStore* pProps = NULL;
         PROPVARIANT varName;
         PropVariantInit(&varName);
-        hr = pCollection->Item(index, &pDevice);
+        hr = pCollection->Item(index, &pDevice); //get the actual device
         if (FAILED(hr)) {
             printf_s("[ERR] Failed to get device!\n");
             return 0;
         }
-        hr = pDevice->GetId((LPWSTR*)&deviceID);
+        hr = pDevice->GetId((LPWSTR*)&deviceID); //get its id
         if (FAILED(hr)) {
             printf_s("[ERR] Failed to get ID of device!\n");
             return 0;
@@ -223,8 +225,18 @@ namespace wav {
 		int barWidth = bufferWidth - 2;
 		int barProgress = (barWidth * progress) / 100;
 		int barRemainder = barWidth - barProgress;
-		for (int i = 0; i < barProgress; i++) { buffer[i] = '='; }
-		for (int i = 0; i < barRemainder; i++) { buffer[i + barProgress] = '-'; }
+
+        for (int i = 0; i < barWidth; i++) {
+            if (i < barProgress) {
+                buffer[i] = '=';
+            }
+            else if (i == barProgress) {
+                buffer[i] = '>';
+            }
+            else {
+                buffer[i] = '-';
+            }
+        }
     }
 
     //i have no fucking idea what this does, i copied it from an example and just monkey-typewriter'd it until it worked
@@ -298,11 +310,19 @@ namespace wav {
 				//squirt the audio data from the wav file into the playback buffer
                 *buffer++ = ((short*)wavheap)[wavPlaybackSample];
                 
-                //progress bar code only
-				int percentage = (int)((float)wavPlaybackSample / (float)writeIndex * 100.f);
-				if (percentage > lastPrintedPercentage) {
+                int playbackMS = (wavPlaybackSample / header.sampleRate) * 1000;
+                
+				if (playbackMS % 100 == 0) { //redraw progress bar every 100ms
+
+                    //progress bar
+                    int percentage = (int)((float)wavPlaybackSample / (float)writeIndex * 100.f);
 					generateProgressBar(percentage, progressBarTxt, 50);
-					printf_s("\r[PLAYING][%s][%i%%]", progressBarTxt, percentage); //i kinda feel this shouldnt be done like this. maybe play in another thread?
+                    
+                    //X: Minutes, Y: Seconds
+					vec2 progressTime = { playbackMS / 60000, ((playbackMS % 60000) / 1000) };
+					vec2 totalTime = { (int)actualDurationMS / 60000, ((int)actualDurationMS % 60000) / 1000 };
+                    
+					printf_s("\r[PLAYING][%s][%02d:%02d / %02d:%02d]", progressBarTxt, progressTime.X, progressTime.Y, totalTime.X, totalTime.Y);
 					lastPrintedPercentage = percentage;
 				}
                 
@@ -311,7 +331,7 @@ namespace wav {
             }
 
             //if its done then quit out of the loop
-            if (wavPlaybackSample > writeIndex) {
+            if (wavPlaybackSample >= writeIndex) {
                 finished = true;
                 Sleep(500);
                 ShowConsoleCursor(true);

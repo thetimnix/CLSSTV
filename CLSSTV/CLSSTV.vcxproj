@@ -152,6 +152,7 @@
     <ClInclude Include="modes.h" />
     <ClInclude Include="MRX.h" />
     <ClInclude Include="PDX.h" />
+    <ClInclude Include="R24.h" />
     <ClInclude Include="R36.h" />
     <ClInclude Include="R72.h" />
     <ClInclude Include="SCX.h" />

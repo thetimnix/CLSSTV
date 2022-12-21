@@ -4,6 +4,7 @@
 enum encModeID {
 	EM_BW8,
 	EM_BW12,
+	EM_R24,
 	EM_R36,
 	EM_R72,
 	EM_SC1,
@@ -25,6 +26,7 @@ struct encMode {
 
 extern encMode BW8;
 extern encMode BW12;
+extern encMode R24;
 extern encMode R36;
 extern encMode R72;
 extern encMode SC1;
@@ -35,4 +37,4 @@ extern encMode MR2;
 extern encMode PD50;
 extern encMode PD90;
 extern encMode PD120;
-extern encMode modes[12];
+extern encMode modes[13];

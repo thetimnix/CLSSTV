@@ -9,6 +9,7 @@
 
 #include "BWX.h" //BW8, BW12
 #include "SCX.h" //Scottie1, Scottie2, ScottieDX
+#include "R24.h" //Robot24
 #include "R36.h" //Robot36
 #include "R72.h" //Robot72
 #include "PDX.h" //PD50, PD90, PD120
@@ -17,7 +18,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-#define VERSION "1.7"
+#define VERSION "1.8"
 
 //gets the substring after the last '/' character
 const char* getFilenameFromPath(const char* path) {
@@ -130,8 +131,6 @@ int main(int argc, char* argv[])
 	int standardSampleRates[] = { 8000, 11025, 16000, 22050, 32000, 44100, 48000, 96000 };
 	bool usingStandardSampleRate = false;
 	
-
-	
 	for (int i = 0; i < argc; i++) {
 		//find -I switch and input argument
 		if (strcmp(argv[i], "-I") == 0 && i + 1 <= argc && !inputPath) {
@@ -154,7 +153,7 @@ int main(int argc, char* argv[])
 		}
 		
 		//find -P switch and device
-		if (strcmp(argv[i], "-P") == 0 && i + 1 <= argc) {
+		if (strcmp(argv[i], "-P") == 0 && i + 1 <= argc && !playback) {
 			playbackDevice = strtol(argv[i + 1], NULL, 10);
 			playback = true;
 		}
@@ -259,7 +258,11 @@ int main(int argc, char* argv[])
 		case(EM_BW12):
 			encodeBW12(resizedRGB);
 			break;
-		
+
+		case(EM_R24):
+			encodeR24(resizedRGB);
+			break;
+			
 		case(EM_R36):
 			encodeR36(resizedRGB);
 			break;
@@ -323,22 +326,22 @@ int main(int argc, char* argv[])
 	}	
 
 	printf_s(" Expected time: %f MS\n", wav::expectedDurationMS);
-	printf_s(" Actual time:   %f MS\n", wav::actualDurationMS);
-	printf_s(" Added: %i Skipped: %i\n", wav::balance_AddedSamples, wav::balance_SkippedSamples);
+	printf_s(" Actual time  : %f MS\n", wav::actualDurationMS);
+	printf_s(" Added: %i, Skipped: %i\n", wav::balance_AddedSamples, wav::balance_SkippedSamples);
 
 	//playback the file if requested
 	bool first = true;
-	if (playback) {
-		while (true) {
-			if ((GetConsoleWindow() != GetForegroundWindow()) && !first) { continue; }
-			
-			if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) { break; }
-			
-			if (GetAsyncKeyState('R') & 0x8000 || first) {
-				first = false;
-				wav::beginPlayback(playbackDevice);
-				printf_s("\n[End of playback. Press R to reply or ESC to exit.]\n");
-			}
+	
+	while (playback) {
+		if (!first) { //ignore quitting possibility on the first playback loop
+			if ((GetConsoleWindow() != GetForegroundWindow())) { continue; } //not focussed, dont do anything
+			if (GetAsyncKeyState(VK_ESCAPE) & 0x8000) { playback = false; } //escape pressed, quit out of the loop
+		}
+
+		if (GetAsyncKeyState('R') & 0x8000 || first) { //initial play, or replay
+			first = false;
+			wav::beginPlayback(playbackDevice);
+			printf_s("\n[End of playback. Press R to reply or ESC to exit.]\n");
 		}
 	}
 }
