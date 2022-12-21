@@ -20,19 +20,21 @@
 #include "wav.h"
 #include "modes.h"
 
-void encodeR72(SSTV::rgb * rgbBuffer) {
-    SSTV::addVisCode(0x0C);
+//R24 feels like a missed opportunity, it could have been much faster using the R36 style colouring of sending Y and U on alternating lines
 
-    int img_width = R72.size.X;
-    int img_height = R72.size.Y;
+void encodeR24(SSTV::rgb* rgbBuffer) {
+    SSTV::addVisCode(0x04);
 
-    float mspp_Y = 138.f / (float)img_width;
-    float mspp_UV = 69.f / (float)img_width;
+    int img_width = R24.size.X;
+    int img_height = R24.size.Y;
 
-    float hSyncMs = 9.f;
-    float syncPorchMs = 3.f;
-    float separatorMs = 4.5f;
-    float sepPorchMs = 1.5f;
+    float mspp_Y = 92.f / (float)img_width;
+    float mspp_UV = 46.f / (float)img_width;
+
+    float hSyncMs = 6.f;
+    float syncPorchMs = 2.f;
+    float separatorMs = 3.f;
+    float sepPorchMs = 1.f;
 
     for (int y = 0; y < img_height; y++) {
         wav::addTone(1200, hSyncMs);
