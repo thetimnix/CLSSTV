@@ -49,14 +49,15 @@ const char* getFilenameFromPath(const char* path) {
 	return filename;
 }
 
-SSTV::rgb* resizeNN(SSTV::rgb* input, vec2 inputSize, vec2 newSize) {
+//-1: Resize failed, 0: Resize not required, 1: Resize successful
+int resizeNN(SSTV::rgb** input, vec2 inputSize, vec2 newSize) {
 	//dont need to do anything if its already the right size, return the origional to save memory
-	if (inputSize == newSize) { return input; }
+	if (inputSize == newSize) { return 0; }
 	
 	printf_s("[Resizing: %ix%i ==> %ix%i]\n", inputSize.X, inputSize.Y, newSize.X, newSize.Y);
 	
 	SSTV::rgb* output = new SSTV::rgb[newSize.Y * newSize.X];
-	if (!output) { return nullptr; }
+	if (!output) { return -1; }
 
 	//calc scale values
 	float xScale = (float)newSize.X / (float)inputSize.X;
@@ -70,12 +71,13 @@ SSTV::rgb* resizeNN(SSTV::rgb* input, vec2 inputSize, vec2 newSize) {
 
 			//set the pixel to the closest value, avoid any over/underflows. VS still complains about the possibility.
 			if (writeIndex <= (newSize.Y * newSize.X) && readIndex <= (inputSize.X * inputSize.Y) && writeIndex >= 0 && readIndex >= 0) {
-				output[writeIndex] = input[readIndex];
+				output[writeIndex] = (*input)[readIndex];
 			}
 		}
 	}
 
-	return output;
+	*input = output;	
+	return 1;
 }
 
 void printHelp() {
@@ -227,7 +229,7 @@ int main(int argc, char* argv[])
 	}
 	
 	//begin encode
-	printf_s("[Beginning SSTV generation @ %iHz]\n", wav::header.sampleRate);
+	printf_s("[Beginning %s generation @ %iHz]\n", selectedEncMode->code, wav::header.sampleRate);
 
 	//read input image
 	vec2 imgSize = { 0, 0 };
@@ -237,7 +239,7 @@ int main(int argc, char* argv[])
 	//stbi will load most image types, dont need to determin which load function to use anymore
 	rgbBuffer = (SSTV::rgb*)stbi_load(inputPath, &imgSize.X, &imgSize.Y, &imgChannels, 3);
 	
-	if (!rgbBuffer) { 
+	if (!rgbBuffer || imgSize.X <= 0 || imgSize.Y <= 0) {
 		printf_s("[ERR] Could not read source file\n");
 		return 0;
 	}
@@ -254,12 +256,14 @@ int main(int argc, char* argv[])
 	}
 
 	//resize if required
-	SSTV::rgb* resizedRGB = 0;
-	resizedRGB = resizeNN(rgbBuffer, imgSize, selectedEncMode->size);
+	if (resizeNN(&rgbBuffer, imgSize, selectedEncMode->size) < 0) {
+		printf_s("[ERR] Error occured during resizing\n");
+		return 0;
+	}
 
 	//draw overlay	
 	if (callsign) {
-		tr::bindToCanvas(resizedRGB, selectedEncMode->size);
+		tr::bindToCanvas(rgbBuffer, selectedEncMode->size);
 		tr::setTextOrigin({ 0, 0 });
 		tr::drawString(tr::white, 1, "%s", callsign);
 	}
@@ -271,7 +275,7 @@ int main(int argc, char* argv[])
 	SSTV::addVoxTone();
 
 	//call actual encode function
-	selectedEncMode->ec(resizedRGB);
+	selectedEncMode->ec(rgbBuffer);
 	
 	//add 500ms footer
 	wav::addTone(0, 500.f);
