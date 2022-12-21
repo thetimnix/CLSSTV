@@ -147,6 +147,7 @@
     <ClCompile Include="wav.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AVT.h" />
     <ClInclude Include="BWX.h" />
     <ClInclude Include="fontData.h" />
     <ClInclude Include="modes.h" />

@@ -71,5 +71,8 @@
     <ClInclude Include="R24.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AVT.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

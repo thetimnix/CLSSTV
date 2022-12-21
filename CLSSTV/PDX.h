@@ -61,7 +61,7 @@ void encodePD(SSTV::rgb* rgbBuffer, int img_width, int img_height, double lineMS
 
 void encodePD50(SSTV::rgb* rgbBuffer) {
     SSTV::addVisCode(0x5D);
-    encodePD(rgbBuffer, PD50.size.X, PD50.size.Y, 91.52f);
+    encodePD(rgbBuffer, PD50.size.X, PD50.size.Y, 91.520f);
 }
 
 void encodePD90(SSTV::rgb* rgbBuffer) {
@@ -71,5 +71,25 @@ void encodePD90(SSTV::rgb* rgbBuffer) {
 
 void encodePD120(SSTV::rgb* rgbBuffer) {
     SSTV::addVisCode(0x5F);
-    encodePD(rgbBuffer, PD120.size.X, PD120.size.Y, 121.6f);
+    encodePD(rgbBuffer, PD120.size.X, PD120.size.Y, 121.600f);
+}
+
+void encodePD160(SSTV::rgb* rgbBuffer) {
+    SSTV::addVisCode(0x62);
+    encodePD(rgbBuffer, PD160.size.X, PD160.size.Y, 195.584f);
+}
+
+void encodePD180(SSTV::rgb* rgbBuffer) {
+    SSTV::addVisCode(0x60);
+    encodePD(rgbBuffer, PD180.size.X, PD180.size.Y, 183.040f);
+}
+
+void encodePD240(SSTV::rgb* rgbBuffer) {
+    SSTV::addVisCode(0x61);
+    encodePD(rgbBuffer, PD240.size.X, PD240.size.Y, 244.480f);
+}
+
+void encodePD290(SSTV::rgb* rgbBuffer) {
+    SSTV::addVisCode(0x5E);
+    encodePD(rgbBuffer, PD290.size.X, PD290.size.Y, 228.800f);
 }

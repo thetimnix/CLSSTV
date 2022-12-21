@@ -24,18 +24,19 @@
 #include "textRendering.h"
 #include "modes.h"
 
-#include "BWX.h" //BW8, BW12
-#include "SCX.h" //Scottie1, Scottie2, ScottieDX
-#include "R24.h" //Robot24
-#include "R36.h" //Robot36
-#include "R72.h" //Robot72
-#include "PDX.h" //PD50, PD90, PD120
-#include "MRX.h" //Martin1, Martin2 
+//#include "BWX.h" //BW8, BW12
+//#include "SCX.h" //Scottie1, Scottie2, ScottieDX
+//#include "R24.h" //Robot24
+//#include "R36.h" //Robot36
+//#include "R72.h" //Robot72
+//#include "PDX.h" //PD50, PD90, PD120
+//#include "MRX.h" //Martin1, Martin2 
+//#include "AVT.h" //AVT90
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-#define VERSION "1.8"
+#define VERSION "1.9"
 
 //gets the substring after the last '/' character
 const char* getFilenameFromPath(const char* path) {
@@ -97,10 +98,13 @@ void printHelp() {
 }
 
 void printEncCodes() {
-	printf_s("[CLSSTV MODES]");
+	printf_s("[CLSSTV MODES]\n");
 	printf_s(" %-8s | %-16s | %-9s\n", "CODE", "DESCRIPTION", "IMG SIZE");
 	printf_s(" %-8s | %-16s | %-9s\n", "", "", "");
 	for (encMode& line : modes) {
+		if (line.size == vec2{0, 0}) {
+			continue;
+		}
 		printf_s(" %-8s | %-16s | %i x %i\n", line.code, line.desc, line.size.X, line.size.Y);
 	}
 }
@@ -267,63 +271,7 @@ int main(int argc, char* argv[])
 	SSTV::addVoxTone();
 
 	//call actual encode function
-	switch (selectedEncMode->ID) {
-		case(EM_BW8):
-			encodeBW8(resizedRGB);
-			break;
-		
-		case(EM_BW12):
-			encodeBW12(resizedRGB);
-			break;
-
-		case(EM_R24):
-			encodeR24(resizedRGB);
-			break;
-			
-		case(EM_R36):
-			encodeR36(resizedRGB);
-			break;
-		
-		case(EM_R72):
-			encodeR72(resizedRGB);
-			break;
-		
-		case(EM_SC1):
-			encodeSC1(resizedRGB);
-			break;
-
-		case(EM_SC2):
-			encodeSC2(resizedRGB);
-			break;
-
-		case(EM_SCDX):
-			encodeSCDX(resizedRGB);
-			break;
-
-		case(EM_MR1):
-			encodeMR1(resizedRGB);
-			break;
-
-		case(EM_MR2):
-			encodeMR2(resizedRGB);
-			break;
-
-		case(EM_PD50):
-			encodePD50(resizedRGB);
-			break;
-
-		case(EM_PD90):
-			encodePD90(resizedRGB);
-			break;
-
-		case(EM_PD120):
-			encodePD120(resizedRGB);
-			break;
-		
-		default:
-			printf_s("[ERR] Invalid encCode ID");
-			return 0;
-	}
+	selectedEncMode->ec(resizedRGB);
 	
 	//add 500ms footer
 	wav::addTone(0, 500.f);

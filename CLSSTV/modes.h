@@ -18,6 +18,8 @@
 #pragma once
 #include "SSTV.h"
 
+typedef void* (__fastcall* encCall)(SSTV::rgb* bitmap);
+
 enum encModeID {
 	EM_BW8,
 	EM_BW12,
@@ -29,9 +31,14 @@ enum encModeID {
 	EM_SCDX,
 	EM_MR1,
 	EM_MR2,
+	EM_AVT90,
 	EM_PD50,
 	EM_PD90,
-	EM_PD120
+	EM_PD120,
+	EM_PD160,
+	EM_PD180,
+	EM_PD240,
+	EM_PD290
 };
 
 struct encMode {
@@ -39,6 +46,7 @@ struct encMode {
 	char code[8];
 	char desc[128];
 	vec2 size;
+	encCall ec;
 };
 
 extern encMode BW8;
@@ -51,7 +59,12 @@ extern encMode SC2;
 extern encMode SCDX;
 extern encMode MR1;
 extern encMode MR2;
+extern encMode AVT90;
 extern encMode PD50;
 extern encMode PD90;
 extern encMode PD120;
-extern encMode modes[13];
+extern encMode PD160;
+extern encMode PD180;
+extern encMode PD240;
+extern encMode PD290;
+extern encMode modes[64];
