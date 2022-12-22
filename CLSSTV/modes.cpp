@@ -22,7 +22,7 @@
 #include "R36.h" //Robot36
 #include "R72.h" //Robot72
 #include "PDX.h" //PD50, PD90, PD120
-#include "MRX.h" //Martin1, Martin2 
+#include "MAX.h" //Martin1, Martin2 
 #include "AVT.h" //AVT90
 
 encMode BW8 =   { EM_BW8,   "BW8",   "Monochrome 8s",   {160, 120}, (encCall)&encodeBW8};
@@ -33,8 +33,8 @@ encMode R72 =   { EM_R72,   "R72",   "Robot72",         {320, 240}, (encCall)&en
 encMode SC1 =   { EM_SC1,   "SC1",   "Scottie 1",       {320, 256}, (encCall)&encodeSC1 };
 encMode SC2 =   { EM_SC2,   "SC2",   "Scottie 2",       {320, 256}, (encCall)&encodeSC2 };
 encMode SCDX =  { EM_SCDX,  "SCDX",  "Scottie DX",      {320, 256}, (encCall)&encodeSCDX };
-encMode MR1 =   { EM_MR1,   "MR1",   "Martin 1",        {320, 256}, (encCall)&encodeMR1 };
-encMode MR2 =   { EM_MR2,   "MR2",   "Martin 2",        {320, 256}, (encCall)&encodeMR2 };
+encMode MR1 =   { EM_MR1,   "MR1",   "Martin 1",        {320, 256}, (encCall)&encodeMA1 };
+encMode MR2 =   { EM_MR2,   "MR2",   "Martin 2",        {320, 256}, (encCall)&encodeMA2 };
 encMode AVT90 = { EM_AVT90, "AVT90", "AVT 90",          {320, 240}, (encCall)&encodeAVT90 };
 encMode PD50 =  { EM_PD50,  "PD50",  "PD50",            {320, 256}, (encCall)&encodePD50 };
 encMode PD90 =  { EM_PD90,  "PD90",  "PD90",            {320, 256}, (encCall)&encodePD90 };

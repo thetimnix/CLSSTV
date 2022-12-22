@@ -151,7 +151,7 @@
     <ClInclude Include="BWX.h" />
     <ClInclude Include="fontData.h" />
     <ClInclude Include="modes.h" />
-    <ClInclude Include="MRX.h" />
+    <ClInclude Include="MAX.h" />
     <ClInclude Include="PDX.h" />
     <ClInclude Include="R24.h" />
     <ClInclude Include="R36.h" />

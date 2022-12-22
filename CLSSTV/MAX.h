@@ -1,4 +1,4 @@
-/*
+    /*
  * This file is part of CLSSTV (https://github.com/nymda/CLSSTV).
  * Copyright (c) 2022 github/nymda
  *
@@ -20,7 +20,7 @@
 #include "wav.h"
 #include "modes.h"
 
-void encodeMR(SSTV::rgb* rgbBuffer, double lineMS) {
+void encodeMA(SSTV::rgb* rgbBuffer, double lineMS) {
     int img_width = MR1.size.X;
     int img_height = MR1.size.Y;
 
@@ -52,12 +52,12 @@ void encodeMR(SSTV::rgb* rgbBuffer, double lineMS) {
     }
 }
 
-void encodeMR1(SSTV::rgb* rgbBuffer) {
+void encodeMA1(SSTV::rgb* rgbBuffer) {
     SSTV::addVisCode(0x2C);
-    encodeMR(rgbBuffer, 146.432f);
+    encodeMA(rgbBuffer, 146.432f);
 }
 
-void encodeMR2(SSTV::rgb* rgbBuffer) {
+void encodeMA2(SSTV::rgb* rgbBuffer) {
     SSTV::addVisCode(0x28);
-    encodeMR(rgbBuffer, 73.216f);
+    encodeMA(rgbBuffer, 73.216f);
 }

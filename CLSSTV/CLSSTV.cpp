@@ -173,18 +173,17 @@ int main(int argc, char* argv[])
 		}
 
 		//find -SR switch and sample rate
-		if (strcmp(argv[i], "-SR") == 0 && i + 1 <= argc && !setSampleRate) {
-			
+		if (strcmp(argv[i], "-SR") == 0 && i + 1 <= argc && !setSampleRate) {		
 			sampleRate = strtol(argv[i + 1], NULL, 10);
+			
 			if (sampleRate <= 0) {
 				printf_s("[Invalid sample rate, using default]\n");
 				sampleRate = 8000;
 			}
-			else {
-				for (int sr : standardSampleRates) {
-					if (sr == sampleRate) {
-						usingStandardSampleRate = true;
-					}
+			
+			for (int sr : standardSampleRates) {
+				if (sr == sampleRate) {
+					usingStandardSampleRate = true;
 				}
 			}
 
