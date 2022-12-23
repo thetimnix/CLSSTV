@@ -55,11 +55,11 @@ void encodeSC1(SSTV::rgb* rgbBuffer) {
 }
 
 void encodeSC2(SSTV::rgb* rgbBuffer) {
-    SSTV::addVisCode(0x38);
+    SSTV::addVisCode(0xB8);
     encodeSC(rgbBuffer, 88.064);
 }
 
 void encodeSCDX(SSTV::rgb* rgbBuffer) {
-    SSTV::addVisCode(0x4C);
+    SSTV::addVisCode(0xCC);
     encodeSC(rgbBuffer, 345.600);
 }

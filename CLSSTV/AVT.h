@@ -22,7 +22,7 @@
 
 //AVT90, because fuck sync pulses
 void encodeAVT90(SSTV::rgb* rgbBuffer) {
-    SSTV::addVisCodeManual(0x44);
+    SSTV::addVisCode(0x44);
 
     int img_width = AVT90.size.X;
     int img_height = AVT90.size.Y;

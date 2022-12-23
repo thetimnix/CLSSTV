@@ -41,12 +41,9 @@ namespace SSTV {
         wav::addTone(1200, 30);
 
         int bit = 0;
-        int ones = 0;
-
-        for (int i = 0; i < 7; i++) {
+        for (int i = 0; i < 8; i++) {
             bit = (visCode >> i) & 1;
             if (bit) {
-                ones++;
                 wav::addTone(1100, 30); //1
             }
             else {
@@ -54,24 +51,17 @@ namespace SSTV {
             }
         }
 
-        if (ones % 2 == 0) {
-            wav::addTone(1300, 30); //parity 0 if even
-        }
-        else {
-            wav::addTone(1100, 30); //parity 1 if odd
-        }
-
         wav::addTone(1200, 30);
     }
 
-    void addVisCodeManual(char visCode) {
+    void addLongVisCode(short visCode) {
         wav::addTone(1900, 300);
         wav::addTone(1200, 10);
         wav::addTone(1900, 300);
         wav::addTone(1200, 30);
 
         int bit = 0;
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < 16; i++) {
             bit = (visCode >> i) & 1;
             if (bit) {
                 wav::addTone(1100, 30); //1

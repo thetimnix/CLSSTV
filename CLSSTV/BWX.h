@@ -41,11 +41,11 @@ void encodeBW(SSTV::rgb* rgbBuffer, double lineMS) {
 }
 
 void encodeBW8(SSTV::rgb* rgbBuffer) {
-    SSTV::addVisCode(0x02);
+    SSTV::addVisCode(0x82);
     encodeBW(rgbBuffer, 58.89709f);
 }
 
 void encodeBW12(SSTV::rgb* rgbBuffer) {
-    SSTV::addVisCodeManual(0x86);
+    SSTV::addVisCode(0x86);
     encodeBW(rgbBuffer, 92.f);
 }

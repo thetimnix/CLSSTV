@@ -32,6 +32,11 @@ enum encModeID {
 	EM_MR1,
 	EM_MR2,
 	EM_AVT90,
+	EM_MR73,
+	EM_MR90,
+	EM_MR115,
+	EM_MR140,
+	EM_MR175,
 	EM_PD50,
 	EM_PD90,
 	EM_PD120,
@@ -60,6 +65,11 @@ extern encMode SCDX;
 extern encMode MR1;
 extern encMode MR2;
 extern encMode AVT90;
+extern encMode MR73;
+extern encMode MR90;
+extern encMode MR115;
+extern encMode MR140;
+extern encMode MR175;
 extern encMode PD50;
 extern encMode PD90;
 extern encMode PD120;
@@ -67,4 +77,5 @@ extern encMode PD160;
 extern encMode PD180;
 extern encMode PD240;
 extern encMode PD290;
+
 extern encMode modes[64];

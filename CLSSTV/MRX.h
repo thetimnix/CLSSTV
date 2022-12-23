@@ -20,21 +20,16 @@
 #include "wav.h"
 #include "modes.h"
 
-//R24 feels like a missed opportunity, it could have been much faster using the R36 style colouring of sending Y and U on alternating lines
+void encodeMR(SSTV::rgb* rgbBuffer, float lineMS) {
 
-void encodeR24(SSTV::rgb* rgbBuffer) {
-    SSTV::addVisCode(0x84);
+    int img_width = MR73.size.X;
+    int img_height = MR73.size.Y;
 
-    int img_width = R24.size.X;
-    int img_height = R24.size.Y;
+    float mspp_Y = lineMS / (float)img_width;
+    float mspp_UV = (lineMS / (float)img_width) / 2;
 
-    float mspp_Y = 92.f / (float)img_width;
-    float mspp_UV = 46.f / (float)img_width;
-
-    float hSyncMs = 6.f;
-    float syncPorchMs = 2.f;
-    float separatorMs = 3.f;
-    float sepPorchMs = 1.f;
+    float hSyncMs = 9.f;
+    float syncPorchMs = 1.f;
 
     for (int y = 0; y < img_height; y++) {
         wav::addTone(1200, hSyncMs);
@@ -45,23 +40,48 @@ void encodeR24(SSTV::rgb* rgbBuffer) {
             SSTV::yuv c(rgbBuffer[(y * img_width) + x]);
             wav::addTone(1500 + (CFMultiplier * c.y), mspp_Y);
         }
-
-        wav::addTone(1500, separatorMs);
-        wav::addTone(1900, sepPorchMs);
-
+        SSTV::yuv c1(rgbBuffer[(y * img_width) + img_width]);
+        wav::addTone(1500 + (CFMultiplier * c1.y), 0.1f);
+        
         //V scan
         for (int x = 0; x < img_width; x++) {
             SSTV::yuv c(rgbBuffer[(y * img_width) + x]);
             wav::addTone(1500 + (CFMultiplier * c.v), mspp_UV);
         }
-
-        wav::addTone(2300, separatorMs);
-        wav::addTone(1900, sepPorchMs);
+        SSTV::yuv c2(rgbBuffer[(y * img_width) + img_width]);
+        wav::addTone(1500 + (CFMultiplier * c2.y), 0.1f);
 
         //U scan
         for (int x = 0; x < img_width; x++) {
             SSTV::yuv c(rgbBuffer[(y * img_width) + x]);
             wav::addTone(1500 + (CFMultiplier * c.u), mspp_UV);
         }
+        SSTV::yuv c3(rgbBuffer[(y * img_width) + img_width]);
+        wav::addTone(1500 + (CFMultiplier * c3.y), 0.1f);
     }
+}
+
+void encodeMR73(SSTV::rgb* rgbBuffer) {
+    SSTV::addLongVisCode(0x4523);
+	encodeMR(rgbBuffer, 138.f);
+}
+
+void encodeMR90(SSTV::rgb* rgbBuffer) {
+    SSTV::addLongVisCode(0x4623);
+	encodeMR(rgbBuffer, 171.f);
+}
+
+void encodeMR115(SSTV::rgb* rgbBuffer) {
+    SSTV::addLongVisCode(0x4923);
+	encodeMR(rgbBuffer, 220.f);
+}
+
+void encodeMR140(SSTV::rgb* rgbBuffer) {
+    SSTV::addLongVisCode(0x4a23);
+	encodeMR(rgbBuffer, 269.f);
+}
+
+void encodeMR175(SSTV::rgb* rgbBuffer) {
+    SSTV::addLongVisCode(0x4c23);
+	encodeMR(rgbBuffer, 337.f);
 }

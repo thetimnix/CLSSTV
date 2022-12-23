@@ -27,7 +27,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-#define VERSION "1.9"
+#define VERSION "1.10"
 
 //gets the substring after the last '/' character
 const char* getFilenameFromPath(const char* path) {
