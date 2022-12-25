@@ -242,7 +242,7 @@ namespace wav {
 		int barWidth = bufferWidth - 2;
 		int barProgress = (barWidth * progress) / 100;
 		int barRemainder = barWidth - barProgress;
-
+        
         for (int i = 0; i < barWidth; i++) {
             if (i < barProgress) {
                 buffer[i] = '=';
@@ -258,6 +258,9 @@ namespace wav {
 
     //i have no fucking idea what this does, i copied it from an example and just monkey-typewriter'd it until it worked
     char progressBarTxt[50] = {};
+    
+    const char* progressBarChars = "==================================================";
+    
     void beginPlayback(int iDeviceID) {
         HRESULT hr = CoInitializeEx(nullptr, COINIT_SPEED_OVER_MEMORY);
         if (FAILED(hr)) {
@@ -332,15 +335,21 @@ namespace wav {
 				if (playbackMS % 100 == 0) { //redraw progress bar every 100ms
 
                     //progress bar
-                    int percentage = (int)((float)wavPlaybackSample / (float)writeIndex * 100.f);
-					generateProgressBar(percentage, progressBarTxt, 50);
+                    int percentage = ceil((float)wavPlaybackSample / (float)writeIndex * 100.f);
+					//generateProgressBar(percentage, progressBarTxt, 50);
                     
                     //X: Minutes, Y: Seconds
 					vec2 progressTime = { playbackMS / 60000, ((playbackMS % 60000) / 1000) };
 					vec2 totalTime = { (int)actualDurationMS / 60000, ((int)actualDurationMS % 60000) / 1000 };
                     
-					printf_s("\r[PLAYING][%s][%02d:%02d / %02d:%02d]", progressBarTxt, progressTime.X, progressTime.Y, totalTime.X, totalTime.Y);
-					lastPrintedPercentage = percentage;
+                    int barWidth = 50 - 2;
+                    int barProgress = (barWidth * percentage) / 100;
+                    int barRemainder = barWidth - barProgress;
+                    
+                    //what the fuck
+					printf_s("\r[PLAYING]\033[37m[\033[31m%.*s\33[37m%.*s]\033[0m[%02d:%02d / %02d:%02d]", barProgress, progressBarChars, barRemainder, progressBarChars, progressTime.X, progressTime.Y, totalTime.X, totalTime.Y);
+					
+                    lastPrintedPercentage = percentage;
 				}
                 
                 //next sample
