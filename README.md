@@ -1,6 +1,6 @@
 # CLSSTV
 CLSSTV is a commandline SSTV signal generator written in C++  
-no dependencies required (Except WASAPI)
+no dependencies required (Except WASAPI)  
 this is a commandline only version of WinSSTV
 
 features:  
